@@ -11,4 +11,10 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Components\Pages\TenicosComponets\" />
+    <Folder Include="Components\Services\" />
+    <Folder Include="Components\DAL\" />
+  </ItemGroup>
+
 </Project>
