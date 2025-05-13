@@ -14,7 +14,6 @@
   <ItemGroup>
     <Folder Include="Components\Pages\TenicosComponets\" />
     <Folder Include="Components\Services\" />
-    <Folder Include="Components\DAL\" />
   </ItemGroup>
 
 </Project>
