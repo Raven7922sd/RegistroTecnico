@@ -1,0 +1,83 @@
+﻿@page "/Tecnico/Eliminar/{TecnicoId:int}"
+
+@inject TecnicoService tecnicoService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Eliminar Técnico</PageTitle>
+
+
+@*Notificaciones*@
+
+<label style="font-size:18px; color:red;" hidden="@string.IsNullOrEmpty(Confirmacion)">@Confirmacion</label>
+<label style="font-size:18px; color:darkred" hidden="@string.IsNullOrEmpty(Pregunta)">@Pregunta</label>
+
+<div class="container card shadow-lg">
+
+	@*Header*@
+	<div class="header text-center">
+
+		<h5 class="card-header card-title">Eliminar Técnico</h5>
+
+	</div>
+
+	@*Cuerpo y botones*@
+	<div class="card-body">
+
+		<p><strong>TecnicoId: </strong>@Tecnico.TecnicoId</p>
+		<hr style="height:4px; background-color:black" />
+
+		<p><strong>Nombre: </strong>@Tecnico.TecnicoNombre</p>
+		<hr style="height:4px; background-color:black" />
+
+		<p><strong>Sueldo: </strong>@Tecnico.SueldoHora.ToString("N2")</p>
+		<hr style="height:4px;background-color:black" />
+	</div>
+
+
+	<div class="card-footer text-center mt-2">
+
+		<a href="/Tecnico/Index" class="btn btn-outline-primary">
+			<span class="bi bi-arrow-left"></span>Volver
+		</a>
+
+		<button class="btn btn-outline-danger" @onclick="Borrar">
+			<span class="bi bi-trash"></span>Eliminar
+		</button>
+
+	</div>
+</div>
+
+
+@code {
+	[Parameter]
+	public int TecnicoId { get; set; }
+
+	private Tecnicos Tecnico { get; set; } = new Tecnicos();
+	private string Confirmacion { get; set; } = string.Empty;
+	private string Pregunta { get; set; } = string.Empty;
+
+	protected override async Task OnInitializedAsync()
+	{
+		Tecnico = await tecnicoService.Buscar(TecnicoId);
+		Pregunta = "¿Está seguro de eliminar el técnico?";
+	}
+
+	public async Task Borrar()
+	{
+		var eliminado = await tecnicoService.Eliminar(TecnicoId);
+		if (eliminado != null)
+
+		{
+			Confirmacion = "Tecnico eliminado correctamente";
+			navigationManager.NavigateTo("Tecnico/Index");
+		}
+		else
+		{
+			Confirmacion = "No se pudo eliminar al técnico";
+		}
+
+
+	}
+
+}
