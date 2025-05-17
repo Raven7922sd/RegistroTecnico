@@ -24,6 +24,12 @@ namespace RegistroTecnico.Components.Services
             return await context.Tecnicos.AnyAsync(t => t.TecnicoId == TecnicoId);
         }
 
+        public async Task<bool>ExisteNombre(string TecnicoNombre)
+        {
+            await using var context= await DbFactory.CreateDbContextAsync();
+            return await context.Tecnicos.AnyAsync(n => n.TecnicoNombre == TecnicoNombre);
+
+        }
         public async Task<bool> InsertarTecnico(Tecnicos tecnicos)
         {
             await using var context = await DbFactory.CreateDbContextAsync();
@@ -41,8 +47,7 @@ namespace RegistroTecnico.Components.Services
         public async Task<Tecnicos?> Buscar(int TecnicoId)
         {
             await using var context = await DbFactory.CreateDbContextAsync();
-            return await context.Tecnicos.Include(n => n.TecnicoNombre)
-                .FirstOrDefaultAsync(t => t.TecnicoId == TecnicoId);
+            return await context.Tecnicos.FirstOrDefaultAsync(t => t.TecnicoId == TecnicoId);
         }
 
         public async Task<bool> Eliminar(int TecnicoId)
