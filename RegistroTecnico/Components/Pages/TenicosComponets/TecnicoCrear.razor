@@ -1,0 +1,112 @@
+﻿@page "/Tecnico/Crear"
+@using RegistroTecnico.Components.Models
+@using RegistroTecnico.Components.Services
+
+@inject TecnicoService tecnicoservice
+@rendermode InteractiveServer
+
+<PageTitle>Crear técnico</PageTitle>
+
+<EditForm Model="Tecnico" OnValidSubmit="Guardar">
+	<DataAnnotationsValidator />
+
+	@*Notificaciones*@
+
+	<label style="font-size:18px; color:red;" hidden="@string.IsNullOrEmpty(ErrorGuardar)">@ErrorGuardar</label>
+	<label style="font-size:18px; color:green;" hidden="@string.IsNullOrEmpty(GuardarExito)">@GuardarExito</label>
+
+
+	<div class="container card shadow-lg">
+
+		<div class="card-header text-center">
+			<h5 class="card-title">Registro de Técnicos</h5>
+		</div>
+
+		<div class="card-body">
+
+			<div class="mb-3">
+				<label class="form-label"><strong>TecnicoId</strong></label>
+				<InputNumber class="form-control" @bind-Value="Tecnico.TecnicoId" readonly />
+			</div>
+
+			<div class="mb-3">
+				<label class="form-label"><strong>Nombre</strong></label>
+				<InputText class="form-control" @bind-Value="Tecnico.TecnicoNombre" />
+				<ValidationMessage For="(()=>Tecnico.TecnicoNombre)" />
+			</div>
+
+			<div class="mb-3">
+				<label class="form-label"><strong>Sueldo</strong></label>
+				<InputNumber class="form-control" @bind-Value="Tecnico.SueldoHora" />
+				<ValidationMessage For="(()=>Tecnico.SueldoHora)" />
+			</div>
+
+		</div>
+
+		<div class="card-footer text-center mt-2">
+			<a href="/Tecnico/Index" class="btn btn-outline-primary">
+				<span class="bi bi-arrow-left"></span> Volver
+			</a>
+
+			<button type="submit" class="btn btn-outline-success bi bi-floppy" title="Guardar">
+				Guardar
+			</button>
+
+			<button type="submit" class="btn btn-outline-secondary bi bi-arrow-clockwise" @onclick="Nuevo" title="Nuevo">
+				Nuevo
+			</button>
+		</div>
+
+
+
+	</div>
+
+</EditForm>
+
+@code {
+	private Tecnicos Tecnico { get; set; } = new Tecnicos();
+	private string GuardarExito { get; set; } = string.Empty;
+	private string ErrorGuardar { get; set; } = string.Empty;
+
+	public void Nuevo()
+	{
+		this.Tecnico = new Tecnicos();
+	}
+
+
+	private async Task<bool> Validar()
+	{
+		ErrorGuardar = string.Empty;
+
+		if (await tecnicoservice.ExisteNombre(Tecnico.TecnicoNombre))
+		{
+			return false;
+		}
+		return true;
+	}
+
+	public async Task Guardar()
+	{
+		ErrorGuardar = string.Empty;
+		GuardarExito = string.Empty;
+
+		if (!await Validar())
+		{
+			ErrorGuardar = "Ya existe un técnico con ese nombre.";
+			return;
+		}
+
+		var guardo = await tecnicoservice.Guardar(this.Tecnico);
+		if (guardo != null)
+
+		{
+			GuardarExito = "Técnico guardado correctamente";
+			Nuevo();
+		}
+		else
+		{
+			ErrorGuardar = "Error al guardar el técnico";
+		}
+	}
+
+}
