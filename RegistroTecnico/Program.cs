@@ -12,10 +12,13 @@ builder.Services.AddRazorComponents()
 
 
 //ConStr
-var ConStr = builder.Configuration.GetConnectionString("SqliteConStr");
+//var ConStr = builder.Configuration.GetConnectionString("SqliteConStr");
 
 //Contexto
-builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlite(ConStr));
+//builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlite(ConStr));
+
+var conStr = builder.Configuration.GetConnectionString("SqlServerConStr");
+builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlServer(conStr));
 
 builder.Services.AddScoped<TecnicoService>();
 

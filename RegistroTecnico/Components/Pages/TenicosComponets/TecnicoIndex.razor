@@ -10,13 +10,13 @@
 <section class="container card shadow-lg rounded">
 
 	@*Encabezado*@
-	<header class="card-header d-flex justify-content-between">
-		<h4 class="card-title">Registro de Técnicos</h4>
-		<a href="/Tecnico/Crear" class="btn btn-success">
-			<span class="bi bi-plus-square mt-3"></span> Crear
+	<header class="card-header position-relative text-center">
+		<h4 class="card-title">Consulta de Técnicos</h4>
+
+		<a href="/Tecnico/Crear" class="btn btn-success position-absolute end-0 top-0 mt-2 me-2">
+			<span class="bi bi-plus-square"></span> Crear
 		</a>
 	</header>
-
 	@*Cuerpo*@
 	<div class="card-body">
 
@@ -46,8 +46,14 @@
 			@*Botones y placeholder*@
 			<div class="col-4 border-end border-2">
 				<div class="input-group">
-					<input class="form-control" @bind="ValorFiltro" placeholder="Buscador"/>
+					<input class="form-control" @bind="ValorFiltro"  placeholder="Buscador"/>
 					<button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+				</div>
+			</div>
+
+			<div class="col-5 border-end border2">
+				<div class="input-group">
+					<button class="btn btn-outline-primary btn-restablecer" @onclick="Restablecer">Restablecer</button>
 				</div>
 			</div>
 		</div>
@@ -57,22 +63,20 @@
 			<table class="table table-hover">
 				<thead class="table-striper text-black">
 					<tr>
-						<th style="border-bottom: 4px solid;">TecnicoId</th>
-						<th style="border-bottom: 4px solid;">Nombre</th>
-						<th style="border-bottom: 4px solid;">Sueldo por hora</th>
-						<th style="border-bottom: 4px solid;">Editar</th>
-						<th style="border-bottom: 4px solid;">Eliminar</th>
+						<th style="border-bottom: 2px solid;">TecnicoId</th>
+						<th style="border-bottom: 2px solid;">Nombre</th>
+						<th style="border-bottom: 2px solid;">Sueldo por hora</th>
+						<th style="border-bottom: 2px solid;">Editar</th>
+						<th style="border-bottom: 2px solid;">Eliminar</th>
 					</tr>
 				</thead>
 
 				@foreach(var tecnico in ListaTecnicos)
 				{
-					<tr style="border-bottom:4px">
+					<tr style="border-bottom:1px solid #ccc;">
 						<td>@tecnico.TecnicoId</td>
 						<td>@tecnico.TecnicoNombre</td>
 						<td>@tecnico.SueldoHora</td>
-
-
 						<td><a href="Tecnico/Modificar/@tecnico.TecnicoId" class="btn btn-outline-primary bi bi-pencil-square"></a></td>
 						<td><a href="Tecnico/Eliminar/@tecnico.TecnicoId" class="btn btn-outline-danger bi bi-trash"></a></td>
 
@@ -109,7 +113,6 @@
 		}
 		StateHasChanged();
 	}
-
 	private async Task Restablecer(){
 		ListaTecnicos = await tecnicoservice.Listar(t => t.TecnicoId > 0);
 		Filtro = string.Empty;
