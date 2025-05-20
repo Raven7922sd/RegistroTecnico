@@ -1,49 +1,35 @@
 ﻿@page "/Tecnico/Index"
-@using RegistroTecnico.Components.Models
-@using RegistroTecnico.Components.Services
-
 @inject TecnicoService tecnicoservice
 @rendermode InteractiveServer
 
 <PageTitle>Registro</PageTitle>
 
-<section class="container card shadow-lg rounded">
+<div class="container">
+	<div class="card shadow-lg">
+		<div class="card-header position-relative text-center">
+			<h4 class="card-title">Consulta de Técnicos</h4>
+			<a href="/Tecnico/Crear" class="btn btn-success position-absolute end-0 top-0 mt-2 me-2"><span class="bi bi-plus-square"></span> Crear</a>
+		</div>
 
-	@*Encabezado*@
-	<header class="card-header position-relative text-center">
-		<h4 class="card-title">Consulta de Técnicos</h4>
-
-		<a href="/Tecnico/Crear" class="btn btn-success position-absolute end-0 top-0 mt-2 me-2">
-			<span class="bi bi-plus-square"></span> Crear
-		</a>
-	</header>
-	@*Cuerpo*@
 	<div class="card-body">
-
-		@*Labels*@
 		<div class="filters row">
-
-		<div class="col-3">
-			<label class="col-form-label"><strong>Filtrar por</strong></label>
-		</div>
-
-		<div class="col-4">
-			<label class="col-form-label"><strong>Busqueda</strong> </label>
-		</div>
-
-		</div>
-
-		@*Inputs*@
-		<div class="row aling-items-center">
 			<div class="col-3">
+			<label class="col-form-label"><strong>Filtrar por</strong></label>
+			</div>
+			<div class="col-4">
+			<label class="col-form-label"><strong>Busqueda</strong> </label>
+			</div>
+		</div>
+
+		<div class="row aling-items-center">
+			<div class="col-3 mb-3">
 				<InputSelect class="form-select" @bind-Value="Filtro">
 					<option value=""Selected disable>Seleccione una opción</option>
-					<option value="TecnicoId">TécnidoId</option>
+					<option value="TecnicoId">Técnido Id</option>
 					<option value="Nombre">Nombre</option>
 				</InputSelect>
 			</div>
 
-			@*Botones y placeholder*@
 			<div class="col-4 border-end border-2">
 				<div class="input-group">
 					<input class="form-control" @bind="ValorFiltro"  placeholder="Buscador"/>
@@ -58,39 +44,32 @@
 			</div>
 		</div>
 
-		@*Tablas*@
-		<div class="table-wrapper">
+		<div class="table-responsive">
 			<table class="table table-hover">
-				<thead class="table-striper text-black">
+				<thead>
 					<tr>
-						<th style="border-bottom: 2px solid;">TecnicoId</th>
-						<th style="border-bottom: 2px solid;">Nombre</th>
-						<th style="border-bottom: 2px solid;">Sueldo por hora</th>
-						<th style="border-bottom: 2px solid;">Editar</th>
-						<th style="border-bottom: 2px solid;">Eliminar</th>
+						<th>Técnico Id</th>
+						<th>Nombre</th>
+						<th>Sueldo por hora</th>
+						<th>Editar</th>
 					</tr>
 				</thead>
-
+				<tbody>
 				@foreach(var tecnico in ListaTecnicos)
 				{
-					<tr style="border-bottom:1px solid #ccc;">
+					<tr>
 						<td>@tecnico.TecnicoId</td>
 						<td>@tecnico.TecnicoNombre</td>
 						<td>@tecnico.SueldoHora.ToString("N2")</td>
-						<td><a href="Tecnico/Modificar/@tecnico.TecnicoId" class="btn btn-outline-primary bi bi-pencil-square"></a></td>
-						<td><a href="Tecnico/Eliminar/@tecnico.TecnicoId" class="btn btn-outline-danger bi bi-trash"></a></td>
-
+						<td><a href="Tecnico/Modificar/@tecnico.TecnicoId" class="btn btn-outline-primary bi bi-pencil-square"></a></td
 					</tr>
-
-					}
-
+				}
+				</tbody>
 			</table>
 		</div>
-
 	</div>
-
-
-</section>
+	</div>
+</div>
 
 @code {
 	public List<Tecnicos> ListaTecnicos { get; set; } = new List<Tecnicos>();
