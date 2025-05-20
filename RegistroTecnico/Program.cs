@@ -10,18 +10,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-
-//ConStr
-//var ConStr = builder.Configuration.GetConnectionString("SqliteConStr");
-
-//Contexto
-//builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlite(ConStr));
-
 var conStr = builder.Configuration.GetConnectionString("SqlServerConStr");
 builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlServer(conStr));
 
 builder.Services.AddScoped<TecnicoService>();
-
 
 var app = builder.Build();
 

@@ -9,12 +9,8 @@
 
 <EditForm Model="Tecnico" OnValidSubmit="Guardar">
 	<DataAnnotationsValidator />
-
-	@*Notificaciones*@
-
-	<label style="font-size:18px; color:red;" hidden="@string.IsNullOrEmpty(ErrorGuardar)">@ErrorGuardar</label>
-	<label style="font-size:18px; color:green;" hidden="@string.IsNullOrEmpty(GuardarExito)">@GuardarExito</label>
-
+	<label class="text-danger fs-5" hidden="@string.IsNullOrEmpty(ErrorGuardar)">@ErrorGuardar</label>
+	<label class="text-success fs-5" hidden="@string.IsNullOrEmpty(GuardarExito)">@GuardarExito</label>
 
 	<div class="container card shadow-lg">
 
@@ -23,44 +19,34 @@
 		</div>
 
 		<div class="card-body">
-
 			<div class="mb-3">
 				<label class="form-label"><strong>TecnicoId</strong></label>
 				<InputNumber class="form-control" @bind-Value="Tecnico.TecnicoId" readonly />
 			</div>
-
 			<div class="mb-3">
 				<label class="form-label"><strong>Nombre</strong></label>
 				<InputText class="form-control" @bind-Value="Tecnico.TecnicoNombre" />
 				<ValidationMessage For="(()=>Tecnico.TecnicoNombre)" />
 			</div>
-
 			<div class="mb-3">
 				<label class="form-label"><strong>Sueldo</strong></label>
 				<InputNumber class="form-control" @bind-Value="Tecnico.SueldoHora" />
 				<ValidationMessage For="(()=>Tecnico.SueldoHora)" />
 			</div>
-
 		</div>
 
 		<div class="card-footer text-center mt-2">
-			<a href="/Tecnico/Index" class="btn btn-outline-primary">
+			<a href="/Tecnico/Index" class="btn btn-outline-secondary">
 				<span class="bi bi-arrow-left"></span> Volver
 			</a>
-
 			<button type="submit" class="btn btn-outline-success bi bi-floppy" title="Guardar">
 				Guardar
 			</button>
-
-			<button type="submit" class="btn btn-outline-secondary bi bi-arrow-clockwise" @onclick="Nuevo" title="Nuevo">
-				Nuevo
+			<button type="submit" class="btn btn-outline-primary bi bi-arrow-clockwise" @onclick="Nuevo" title="Nuevo">
+				Limpiar
 			</button>
 		</div>
-
-
-
 	</div>
-
 </EditForm>
 
 @code {
@@ -72,7 +58,6 @@
 	{
 		this.Tecnico = new Tecnicos();
 	}
-
 
 	private async Task<bool> Validar()
 	{
@@ -95,10 +80,8 @@
 			ErrorGuardar = "Ya existe un técnico con ese nombre.";
 			return;
 		}
-
 		var guardo = await tecnicoservice.Guardar(this.Tecnico);
 		if (guardo != null)
-
 		{
 			GuardarExito = "Técnico guardado correctamente";
 			Nuevo();
@@ -108,5 +91,4 @@
 			ErrorGuardar = "Error al guardar el técnico";
 		}
 	}
-
 }

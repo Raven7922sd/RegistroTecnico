@@ -1,48 +1,35 @@
 ﻿@page "/Tecnico/Modificar/{TecnicoId:int}"
-
 @inject TecnicoService tecnicoservice
 @inject NavigationManager navigationManager
 @rendermode InteractiveServer
-
+@using RegistroTecnico.Components.Models
 
 <PageTitle>Editar Técnico</PageTitle>
 
 <EditForm Model="Tecnico" OnValidSubmit="Guardar">
 	<DataAnnotationsValidator></DataAnnotationsValidator>
 
+	<label class="text-danger fs-5" hidden="@string.IsNullOrEmpty(ErrorNombre)">@ErrorNombre</label>
+	<label class="text-success fs-5" hidden="@string.IsNullOrEmpty(GuardarExito)">@GuardarExito</label>
 
-	@*Notificaciones*@
-
-	<label style="color:red; font-size:18px" hidden="@string.IsNullOrEmpty(ErrorNombre)">@ErrorNombre</label>
-	<label style="color:green; font-size:18px;" hidden="@string.IsNullOrEmpty(GuardarExito)">@GuardarExito</label>
-
-
-	<section class="container card shadow-lg">
-
-		<header class="card-header position-relative text-center">
-			<h5 class="card-title">Modificar técnicos </h5>
-		</header>
+	<div class="container">
+		<div class="card shadow-lg">
+		<div class="card-header position-relative text-center">
+			<h5 class="card-title">Editar técnico</h5>
+		</div>
 
 		<div class="card-body">
-
 			<div class="mb-3">
-				<label class="form-label"><strong>TecnicoId</strong></label>
+				<label class="form-label"><strong>Técnico Id</strong></label>
 				<InputNumber class="form-control" @bind-Value="Tecnico.TecnicoId" readonly></InputNumber>
 
 			</div>
-
-			<hr style="height: 4px; background-color: #000;" />
-
-
 			<div class="mb-3">
 
 				<label class="form-label"><strong>Nombre</strong></label>
 				<InputText class="form-control" @bind-Value="Tecnico.TecnicoNombre"></InputText>
 				<ValidationMessage For="(()=>Tecnico.TecnicoNombre)" />
 			</div>
-
-			<hr style="height: 4px; background-color: #000;" />
-
 			<div class="mb-3">
 				<label class="form-label"><strong>Sueldo</strong></label>
 				<InputNumber class="form-control" @bind-Value="Tecnico.SueldoHora"></InputNumber>
@@ -50,21 +37,18 @@
 			</div>
 		</div>
 
-		<div class="card-footer text-center mt-2">
-
-			<a href="/Tecnico/Index" class="btn btn-outline-primary"><span class="bi bi-arrow-left"></span>Volver</a>
-			<button type="submit" class="btn btn-outline-success"><span class="bi bi-floppy"></span> Guardar</button>
-
+			<div class="card-footer text-center mt-2">
+				<a href="/Tecnico/Index" class="btn btn-outline-secondary"><span class="bi bi-arrow-left"></span>Volver</a>
+				<button type="submit" class="btn btn-outline-success"><span class="bi bi-floppy"></span>Guardar</button>
+				<a type="button" href="/Tecnico/Eliminar/@Tecnico.TecnicoId" class="btn btn-outline-danger"><span class="bi bi-trash"></span>Eliminar</a>
+			</div>
 		</div>
-
-	</section>
-
+</div>
 </EditForm>
 
 @code {
 	[Parameter]
 	public int TecnicoId { get; set; }
-
 	private Tecnicos Tecnico { get; set; } = new Tecnicos();
 	public List<Tecnicos> ListaTecnicos { get; set; } = new List<Tecnicos>();
 	private string ErrorNombre { get; set; } = string.Empty;
@@ -91,7 +75,4 @@
 			ErrorNombre = "Error al mofificar el técnico";
 		}
 	}
-
-
-
 }
