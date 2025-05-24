@@ -23,7 +23,7 @@
 
 		<div class="row aling-items-center">
 			<div class="col-3 mb-3">
-				<InputSelect class="form-select" @bind-Value="Filtro">
+				<InputSelect class="form-select" @bind-value="Filtro">
 					<option value=""Selected disable>Seleccione una opción</option>
 					<option value="TecnicoId">Técnido Id</option>
 					<option value="Nombre">Nombre</option>
@@ -61,7 +61,7 @@
 						<td>@tecnico.TecnicoId</td>
 						<td>@tecnico.TecnicoNombre</td>
 						<td>@tecnico.SueldoHora.ToString("N2")</td>
-						<td><a href="Tecnico/Modificar/@tecnico.TecnicoId" class="btn btn-outline-primary bi bi-pencil-square"></a></td
+						<td><a href="Tecnico/Modificar/@tecnico.TecnicoId" class="btn btn-outline-primary bi bi-pencil-square"></a></td>
 					</tr>
 				}
 				</tbody>

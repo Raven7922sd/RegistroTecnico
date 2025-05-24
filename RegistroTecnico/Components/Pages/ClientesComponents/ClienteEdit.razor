@@ -1,0 +1,124 @@
+﻿@page "/Cliente/Edit/{ClienteId:int}"
+@inject TecnicoService tecnicosService
+@inject ClienteService clientesService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Editar</PageTitle>
+<EditForm Model="Cliente" OnValidSubmit="Guardar">
+	<DataAnnotationsValidator />
+
+	<label class="text-danger fs-5" hidden="@string.IsNullOrEmpty(ErrorNombre)">@ErrorNombre</label>
+	<label class="text-success fs-5" hidden="@string.IsNullOrEmpty(GuardarExito)">@GuardarExito</label>
+
+	<div class="container">
+		<div class="card shadow-lg">
+			<div class="card-header text-center">
+				<h5 class="card-title">Registro de Clientes</h5>
+			</div>
+
+			<div class="card-body">
+				<div class="mb-3">
+					<label class="form-label"><strong>Cliente Id</strong></label>
+					<InputNumber class="form-control" @bind-Value="Cliente.ClienteId" readonly></InputNumber>
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Nombre</strong></label>
+					<InputText class="form-control" @bind-Value="Cliente.ClienteNombre"></InputText>
+					<ValidationMessage For="(() => Cliente.ClienteNombre)" />
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>RNC</strong></label>
+					<InputText class="form-control" @bind-Value="Cliente.Rnc"></InputText>
+					<ValidationMessage For="(() => Cliente.Rnc)" />
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Límite de Crédito</strong></label>
+					<InputNumber class="form-control" @bind-Value="Cliente.LimiteCredito"></InputNumber>
+					<ValidationMessage For="(() => Cliente.LimiteCredito)" />
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Técnico</strong></label>
+
+					<div class="input-group">
+						<InputSelect class="form-control form-select" @bind-Value="Cliente.TecnicoId">
+							<option value="" selected disabled>Elija una opcion</option>
+							@foreach (var tecnico in ListaTecnicos){
+								<option value="@tecnico.TecnicoId">@tecnico.TecnicoNombre</option>
+							}
+						</InputSelect>
+					</div>
+				</div>
+			</div>
+
+			<div class="card-footer text-center mt-2">
+				<div class="btn-group" role="group">
+				<a type="button" href="/Cliente/Eliminar/@Cliente.ClienteId" class="btn btn-outline-danger"><span class="bi bi-trash"></span>Eliminar</a>
+				<button type="submit" class="btn btn-outline-success"><span class="bi bi-floppy"></span> Guardar</button>
+				<a href="/Cliente/Index" class="btn btn-outline-secondary"><span class="bi bi-arrow-left"></span>Volver</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</EditForm>
+
+@code {
+	[Parameter]
+	public int ClienteId { get; set; }
+	private Clientes Cliente { get; set; } = new Clientes();
+	public List<Tecnicos> ListaTecnicos { get; set; } = new List<Tecnicos>();
+	private string ErrorNombre { get; set; } = string.Empty;
+	private string GuardarExito { get; set; } = string.Empty;
+
+	protected override async Task OnInitializedAsync()
+	{
+		Cliente = await clientesService.Buscar(ClienteId);
+		ListaTecnicos = await tecnicosService.Listar(t => t.TecnicoId > 0);
+	}
+
+	private async Task<bool> Validar()
+	{
+		ErrorNombre = string.Empty;
+
+		if (await clientesService.ExisteNombre(Cliente.ClienteNombre) &&
+			Cliente.ClienteNombre != (await clientesService.Buscar(ClienteId)).ClienteNombre)
+		{
+			ErrorNombre = "Ya existe un cliente con este nombre.";
+			return false;
+		}
+
+		if (await clientesService.ExisteRNC(Cliente.Rnc) &&
+			Cliente.Rnc != (await clientesService.Buscar(ClienteId)).Rnc)
+		{
+			ErrorNombre = "Ya existe un cliente con este RNC.";
+			return false;
+		}
+
+		return true;
+	}
+
+	public async Task Guardar()
+	{
+		ErrorNombre = string.Empty;
+		GuardarExito = string.Empty;
+
+		if (!await Validar())
+		{
+			return;
+		}
+		var guardo = await clientesService.Guardar(this.Cliente);
+		if (guardo != null)
+		{
+			GuardarExito = "Cliente Modificado Correctamente";
+		}
+		else
+		{
+			ErrorNombre = "Error al modificar el Registro";
+		}
+	}
+}
+

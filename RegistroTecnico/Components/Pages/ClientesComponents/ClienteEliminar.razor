@@ -1,0 +1,63 @@
+﻿@page "/Cliente/Eliminar/{ClienteId:int}"
+@inject ClienteService clienteservice
+@inject TecnicoService tecnicoservice
+@inject NavigationManager navigationmanager
+@rendermode InteractiveServer
+
+<PageTitle>Eliminar</PageTitle>
+
+<label class="text-success fs-5" hidden="@string.IsNullOrEmpty(Confirmacion)">@Confirmacion</label>
+<label class="text-danger fs-5" hidden="@string.IsNullOrEmpty(Pregunta)">@Pregunta</label>
+
+<div class="container">
+	<div class="card shadow-lg">
+		<div class="card-header text-center">
+			<h5 class="card-title ">Eliminar Cliente</h5>
+		</div>
+
+		<div class="card-body">
+			<p><strong>Cliente Id: </strong>@Cliente.ClienteId</p>
+			<p><strong>Nombre: </strong>@Cliente.ClienteNombre</p>
+			<p><strong>Fecha de ingreso:</strong>@Cliente.FechaIngreso</p>
+			<p><strong>RNC: </strong>@Cliente.Rnc</p>
+			<p><strong>Dirección: </strong>@Cliente.DireccionCliente</p>
+			<p><strong>Técnico Encargado: </strong>@Cliente.Tecnico?.TecnicoNombre</p>
+		</div>
+
+		<div class="card-footer text-center mt-2">
+			<div class="btn-group" role="group">
+				<button class="btn btn-outline-danger" @onclick="Borrar"><span class="bi bi-trash"></span>Eliminar</button>
+				<a href="/Cliente/Index" class="btn btn-outline-secondary"><span class="bi bi-arrow-left"></span>Volver</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+@code {
+	[Parameter]
+	public int ClienteId { get; set; }
+	public Clientes Cliente { get; set; } = new Clientes();
+	public string Confirmacion { get; set; } = string.Empty;
+	public string Pregunta { get; set; } = string.Empty;
+
+	protected override async Task OnInitializedAsync()
+	{
+		Cliente = await clienteservice.Buscar(ClienteId);
+		Pregunta = "¿Está seguro de eliminar al cliente?";
+		Cliente.Tecnico = await tecnicoservice.Buscar(Cliente.TecnicoId);
+	}
+
+	public async Task Borrar()
+	{
+		var eliminado = await clienteservice.Eliminar(ClienteId);
+		if (eliminado != null)
+		{
+			Confirmacion = "Cliente eliminado correctamente.";
+			Pregunta = string.Empty;
+		}
+		else
+		{
+			Confirmacion = "No se pudo eliminar al cliente.";
+		}
+	}
+}

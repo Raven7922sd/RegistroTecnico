@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RegistroTecnico.Components.DAL;
 
@@ -11,9 +12,11 @@ using RegistroTecnico.Components.DAL;
 namespace RegistroTecnico.Migrations
 {
     [DbContext(typeof(Contexto))]
-    partial class ContextoModelSnapshot : ModelSnapshot
+    [Migration("20250524033124_tarea2prueba")]
+    partial class tarea2prueba
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,9 +55,12 @@ namespace RegistroTecnico.Migrations
                     b.Property<int>("TecnicoId")
                         .HasColumnType("int");
 
+                    b.Property<int>("TecnicosTecnicoId")
+                        .HasColumnType("int");
+
                     b.HasKey("ClienteId");
 
-                    b.HasIndex("TecnicoId");
+                    b.HasIndex("TecnicosTecnicoId");
 
                     b.ToTable("Clientes");
                 });
@@ -81,13 +87,13 @@ namespace RegistroTecnico.Migrations
 
             modelBuilder.Entity("RegistroTecnico.Components.Models.Clientes", b =>
                 {
-                    b.HasOne("RegistroTecnico.Components.Models.Tecnicos", "Tecnico")
+                    b.HasOne("RegistroTecnico.Components.Models.Tecnicos", "Tecnicos")
                         .WithMany()
-                        .HasForeignKey("TecnicoId")
+                        .HasForeignKey("TecnicosTecnicoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Tecnico");
+                    b.Navigation("Tecnicos");
                 });
 #pragma warning restore 612, 618
         }
