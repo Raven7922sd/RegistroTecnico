@@ -3,15 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using RegistroTecnico.Components.DAL;
 using RegistroTecnico.Components.Services;
 using System.Globalization;
-using RegistroTecnicos.Services;
-
-var culture = new CultureInfo("es-US");
-CultureInfo.DefaultThreadCurrentCulture = culture;
-CultureInfo.DefaultThreadCurrentUICulture = culture;
-
-CultureInfo.CurrentCulture = culture;
-CultureInfo.CurrentUICulture = culture;
-
 
 var builder = WebApplication.CreateBuilder(args);
 

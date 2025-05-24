@@ -1,10 +1,12 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using RegistroTecnico.Components.DAL;
 using RegistroTecnico.Components.Models;
 
-namespace RegistroTecnicos.Services;
-public class ClienteService(IDbContextFactory<Contexto> DbFactory)
+namespace RegistroTecnico.Components.Services;
+
+public class ClienteService(IDbContextFactory<Contexto>DbFactory)
 {
     public async Task<bool> Guardar(Clientes cliente)
     {
@@ -68,4 +70,3 @@ public class ClienteService(IDbContextFactory<Contexto> DbFactory)
         return await contexto.Clientes.Where(criterio).Include(c => c.Tecnico).AsNoTracking().ToListAsync();
     }
 }
-

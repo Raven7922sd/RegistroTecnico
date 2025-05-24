@@ -1,5 +1,4 @@
 ﻿@page "/Cliente/Index"
-@using RegistroTecnicos.Services
 @inject ClienteService clienteservice
 @inject TecnicoService tecnicoservice
 @rendermode InteractiveServer
@@ -70,8 +69,8 @@
 									<td>@cliente.LimiteCredito.ToString("N2")</td>
 									<td>@cliente.Tecnico?.TecnicoNombre</td>
 									<td>@cliente.FechaIngreso.ToString("dd/MM/yyyy")</td>
-									<td><a href="/Cliente/Modificar/@cliente.ClienteId" class="btn btn-outline-primary bi bi-pencil-square"></a></td>
-								</tr>								
+									<td><a href="/Cliente/Edit/@cliente.ClienteId" class="btn btn-outline-primary bi bi-pencil-square"></a></td>
+								</tr>
 							}
 						</tbody>
 					</table>

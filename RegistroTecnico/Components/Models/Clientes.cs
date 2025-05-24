@@ -17,7 +17,7 @@ public class Clientes
     public string DireccionCliente { get; set; } = null!;
 
     [Required(ErrorMessage ="Este campo es obligatorio")]
-    [StringLength(11, MinimumLength = 9, ErrorMessage = "El RNC debe tener entre 9 y 11 caracteres.")]
+    [StringLength(11, MinimumLength = 9, ErrorMessage = "El RNC debe tener valores numéricos entre 9 y 11 caracteres.")]
     public string Rnc { get; set; }
     
     [Required(ErrorMessage ="Este campo solo acepta valores numéricos")]

@@ -2,7 +2,6 @@
 @inject TecnicoService tecnicoservice
 @inject NavigationManager navigationManager
 @rendermode InteractiveServer
-@using RegistroTecnico.Components.Models
 
 <PageTitle>Editar Técnico</PageTitle>
 
@@ -38,9 +37,11 @@
 		</div>
 
 			<div class="card-footer text-center mt-2">
+				<div class="btn-group" role="group">
 				<a href="/Tecnico/Index" class="btn btn-outline-secondary"><span class="bi bi-arrow-left"></span>Volver</a>
 				<button type="submit" class="btn btn-outline-success"><span class="bi bi-floppy"></span>Guardar</button>
 				<a type="button" href="/Tecnico/Eliminar/@Tecnico.TecnicoId" class="btn btn-outline-danger"><span class="bi bi-trash"></span>Eliminar</a>
+				</div>
 			</div>
 		</div>
 </div>
