@@ -11,19 +11,21 @@
 
 <div class="container">
 	<div class="card shadow-lg">
-		<div class="card-header">
-			<h5 class="card-title">Eliminar Cliente</h5>
+		<div class="card-header text-center">
+			<h5 class="card-title ">Eliminar Cliente</h5>
 		</div>
 
 		<div class="card-body">
-			<p><strong>Cliente Id:</strong>@Cliente.ClienteId</p>
-			<p><strong>Nombre:</strong>@Cliente.ClienteNombre</p>
+			<p><strong>Cliente Id: </strong>@Cliente.ClienteId</p>
+			<p><strong>Nombre: </strong>@Cliente.ClienteNombre</p>
 			<p><strong>Fecha de ingreso:</strong>@Cliente.FechaIngreso</p>
-			<p><strong>RNC:</strong>@Cliente.Rnc</p>
-			<p><strong>Dirección:</strong>@Cliente.DireccionCliente</p>
-			<p><strong>Técnico Encargado:</strong>@Cliente.Tecnico?.TecnicoNombre</p>
+			<p><strong>RNC: </strong>@Cliente.Rnc</p>
+			<p><strong>Dirección: </strong>@Cliente.DireccionCliente</p>
+			<p><strong>Técnico Encargado: </strong>@Cliente.Tecnico?.TecnicoNombre</p>
+		</div>
 
-			<div class="card-footer text-center mt-2">
+		<div class="card-footer text-center mt-2">
+			<div class="btn-group" role="group">
 				<button class="btn btn-outline-danger" @onclick="Borrar"><span class="bi bi-trash"></span>Eliminar</button>
 				<a href="/Cliente/Index" class="btn btn-outline-secondary"><span class="bi bi-arrow-left"></span>Volver</a>
 			</div>
@@ -42,6 +44,7 @@
 	{
 		Cliente = await clienteservice.Buscar(ClienteId);
 		Pregunta = "¿Está seguro de eliminar al cliente?";
+		Cliente.Tecnico = await tecnicoservice.Buscar(Cliente.TecnicoId);
 	}
 
 	public async Task Borrar()
@@ -49,7 +52,6 @@
 		var eliminado = await clienteservice.Eliminar(ClienteId);
 		if (eliminado != null)
 		{
-			navigationmanager.NavigateTo("Cliente/Index");
 			Confirmacion = "Cliente eliminado correctamente.";
 		}
 		else
