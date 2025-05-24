@@ -1,4 +1,5 @@
 ﻿@page "/Cliente/Index"
+@using RegistroTecnicos.Services
 @inject ClienteService clienteservice
 @inject TecnicoService tecnicoservice
 @rendermode InteractiveServer
@@ -7,9 +8,9 @@
 
 <div class="container">
 	<div class="card shadow-lg">
-		<div class="card-header space-between">
+		<div class="card-header position-relative text-center">
 			<h4 class="card-title">Consultar clientes</h4>
-			<a href="/Cliente/Crear" class="btn btn-success"><span class="bi bi-plus-square mt-3"></span>Crear</a>
+			<a href="/Cliente/Crear" class="btn btn-success position-absolute end-0 top-0 mt-2 me-2"><span class="bi bi-plus-square mt-3"></span> Crear</a>
 		</div>
 
 		<div class="card-body">
@@ -40,7 +41,7 @@
 
 				<div class="col-5 border-end border-2">
 					<div class="input-group">
-						<button class="btn btn-primary" @onclick="Restablecer">Restablecer</button>
+						<button class="btn btn-outline-primary" @onclick="Restablecer">Restablecer</button>
 					</div>
 				</div>
 
@@ -50,8 +51,11 @@
 							<tr>
 								<th>Cliente Id</th>
 								<th>Nombre</th>
-								<th>Fecha de Ingreso</th>
+								<th>Dirección</th>
+								<th>RNC</th>
+								<th>Límite de Crédito</th>
 								<th>Técnico Encargado</th>
+								<th>Fecha de Ingreso</th>
 								<th>Editar</th>
 							</tr>
 						</thead>
@@ -61,9 +65,12 @@
 								<tr>
 									<td>@cliente.ClienteId</td>
 									<td>@cliente.ClienteNombre</td>
-									<td>@cliente.FechaIngreso.ToString("dd/mm/yyyy")</td>
-									<td>@cliente.Tecnicos?.TecnicoNombre</td>
-									<td><a href="/Cliente/Modificar/@cliente.ClienteId" class="btn btn-outline/primary bi bi-pencil-square"></a></td>
+									<td>@cliente.DireccionCliente</td>
+									<td>@cliente.Rnc</td>
+									<td>@cliente.LimiteCredito.ToString("N2")</td>
+									<td>@cliente.Tecnico?.TecnicoNombre</td>
+									<td>@cliente.FechaIngreso.ToString("dd/MM/yyyy")</td>
+									<td><a href="/Cliente/Modificar/@cliente.ClienteId" class="btn btn-outline-primary bi bi-pencil-square"></a></td>
 								</tr>								
 							}
 						</tbody>
@@ -83,7 +90,7 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		ListaCLientes = await clienteservice.ListarClientes(c => c.ClienteId > 0);
+		ListaCLientes = await clienteservice.Listar(c => c.ClienteId > 0);
 	}
 
 	private async Task Buscar()
@@ -93,20 +100,20 @@
 			if (int.TryParse(ValorFiltro, out var clienteId))
 			{
 				ListaCLientes = await clienteservice
-				.ListarClientes(c => c.ClienteId == clienteId);
+				.Listar(c => c.ClienteId == clienteId);
 			}
 		}
 
 		else if (ValorFiltro.Trim() != "" && Filtro =="Nombre")
 		{
 			ListaCLientes = await clienteservice
-			.ListarClientes(c =>c.ClienteNombre.ToLower().Contains(ValorFiltro.ToLower()));
+			.Listar(c =>c.ClienteNombre.ToLower().Contains(ValorFiltro.ToLower()));
 		}
 		StateHasChanged();
 	}
 	private async Task Restablecer()
 	{
-		ListaCLientes = await clienteservice.ListarClientes(l => l.ClienteId > 0);
+		ListaCLientes = await clienteservice.Listar(l => l.ClienteId > 0);
 		Filtro = string.Empty;
 		ValorFiltro = string.Empty;
 	}
