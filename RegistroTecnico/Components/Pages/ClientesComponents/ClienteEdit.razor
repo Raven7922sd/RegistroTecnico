@@ -30,6 +30,12 @@
 				</div>
 
 				<div class="mb-3">
+					<label class="form-label"><strong>Dirección</strong></label>
+					<InputText class="form-control" @bind-Value="Cliente.DireccionCliente"></InputText>
+					<ValidationMessage For="(() => Cliente.DireccionCliente)" />
+				</div>
+
+				<div class="mb-3">
 					<label class="form-label"><strong>RNC</strong></label>
 					<InputText class="form-control" @bind-Value="Cliente.Rnc"></InputText>
 					<ValidationMessage For="(() => Cliente.Rnc)" />
