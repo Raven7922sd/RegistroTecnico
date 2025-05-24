@@ -9,26 +9,27 @@
 <label class="text-success fs-5" hidden="@string.IsNullOrEmpty(Confirmacion)">@Confirmacion</label>
 <label class="text-danger fs-5" hidden="@string.IsNullOrEmpty(Pregunta)">@Pregunta</label>
 
-<div class="container card shadow-lg">
+<div class="container">
+	<div class=" card shadow-lg">
+		<div class="header text-center">
+			<h5 class="card-header card-title">Eliminar Técnico</h5>
+		</div>
 
-	<div class="header text-center">
-		<h5 class="card-header card-title">Eliminar Técnico</h5>
-	</div>
+		<div class="card-body">
+			<p><strong>TecnicoId: </strong>@Tecnico.TecnicoId</p>
+			<p><strong>Nombre: </strong>@Tecnico.TecnicoNombre</p>
+			<p><strong>Sueldo: </strong>@Tecnico.SueldoHora.ToString("N2")</p>
+		</div>
 
-	<div class="card-body">
-		<p><strong>TecnicoId: </strong>@Tecnico.TecnicoId</p>
-		<p><strong>Nombre: </strong>@Tecnico.TecnicoNombre</p>
-		<p><strong>Sueldo: </strong>@Tecnico.SueldoHora.ToString("N2")</p>
-	</div>
-
-	<div class="card-footer text-center mt-2">
-		<div class="btn-group" role="group">
-		<a href="/Tecnico/Index" class="btn btn-outline-secondary">
-			<span class="bi bi-arrow-left"></span>Volver
-		</a>
-		<button class="btn btn-outline-danger" @onclick="Borrar">
-			<span class="bi bi-trash"></span>Eliminar
-		</button>
+		<div class="card-footer text-center mt-2">
+			<div class="btn-group" role="group">
+				<button class="btn btn-outline-danger" @onclick="Borrar">
+					<span class="bi bi-trash"></span>Eliminar
+				</button>
+				<a href="/Tecnico/Index" class="btn btn-outline-secondary">
+					<span class="bi bi-arrow-left"></span>Volver
+				</a
+			</div>
 		</div>
 	</div>
 </div>

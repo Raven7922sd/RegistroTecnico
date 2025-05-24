@@ -25,7 +25,7 @@
 			<div class="row aling-items-center">
 				<div class="col-3 mb-3">
 					<InputSelect class="form-select" @bind-Value="Filtro">
-						<option value=""selected disable>Seleccione una opción</option>
+						<option value="" selected disabled>Seleccione una opción</option>
 						<option value="ClienteId">Cliente Id</option>
 						<option value="Nombre">Nombre</option>
 					</InputSelect>
@@ -34,7 +34,7 @@
 				<div class="col-4 border-end border-2">
 					<div class="input-group">
 						<input class="form-control"@bind="ValorFiltro" placeholder="Buscador"/>
-						<button type="button" class="btn btn-outline-primary bi bi-search" onclick="Buscar"></button>
+						<button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
 					</div>
 				</div>
 
@@ -83,30 +83,24 @@
 @code {
 	public List<Clientes> ListaCLientes { get; set; } = new List<Clientes>();
 	public List<Tecnicos> ListaTecnicos { get; set; } = new List<Tecnicos>();
-
 	public string Filtro { get; set; } = string.Empty;
 	public string ValorFiltro { get; set; } = string.Empty;
 
-	protected override async Task OnInitializedAsync()
-	{
+	protected override async Task OnInitializedAsync(){
 		ListaCLientes = await clienteservice.Listar(c => c.ClienteId > 0);
 	}
 
 	private async Task Buscar()
 	{
-		if (Filtro == "ClienteId")
-		{
+		if (Filtro == "ClienteId"){
 			if (int.TryParse(ValorFiltro, out var clienteId))
 			{
-				ListaCLientes = await clienteservice
-				.Listar(c => c.ClienteId == clienteId);
+				ListaCLientes = await clienteservice.Listar(c => c.ClienteId == clienteId);
 			}
 		}
-
-		else if (ValorFiltro.Trim() != "" && Filtro =="Nombre")
+		else if (ValorFiltro.Trim()!=""&& Filtro=="Nombre")
 		{
-			ListaCLientes = await clienteservice
-			.Listar(c =>c.ClienteNombre.ToLower().Contains(ValorFiltro.ToLower()));
+			ListaCLientes = await clienteservice.Listar(c =>c.ClienteNombre.ToLower().Contains(ValorFiltro.ToLower()));
 		}
 		StateHasChanged();
 	}

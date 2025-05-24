@@ -78,7 +78,6 @@
 	{
 		Cliente = await clientesService.Buscar(ClienteId);
 		ListaTecnicos = await tecnicosService.Listar(t => t.TecnicoId > 0);
-
 	}
 
 	private async Task<bool> Validar()
