@@ -2,14 +2,13 @@
 @inject ClienteService clienteservice
 @inject TecnicoService tecnicoservice
 @rendermode InteractiveServer
+@inject IToastService itoastservice
+@inject NavigationManager navigationmanager
 
 <PageTitle>Crear</PageTitle>
 
 <EditForm Model="Cliente" OnValidSubmit="GuardarClientes">
 	<DataAnnotationsValidator/>
-
-	<label class="text-danger fs-5" hidden="@string.IsNullOrEmpty(ErrorNombre)">@ErrorNombre</label>
-	<label class="text-success fs-5" hidden="@string.IsNullOrEmpty(GuardarExito)">@GuardarExito</label>
 
 	<div class="container">
 		<div class="card shadow-lg">
@@ -59,19 +58,17 @@
 
 			<div class="card-footer text-center mt-2">
 				<div class="btn-group" role="group">
-				<button type="reset" class="btn btn-outline-primary bi bi-arrow-clockwise" @onclick="Nuevo">Limpiar</button>
-				<button type="submit" class="btn btn-outline-success bi bi-floppy"> Guardar</button>
-				<a href="/Cliente/Index" class="btn btn-outline-secondary"><span class="bi bi-arrow-left"></span>Volver</a>
+					<button type="reset" class="btn btn-outline-primary bi bi-arrow-clockwise" @onclick="Nuevo">Limpiar</button>
+					<button type="submit" class="btn btn-outline-success bi bi-floppy"> Guardar</button>
+					<a href="/Cliente/Index" class="btn btn-outline-secondary"><span class="bi bi-arrow-left"></span>Volver</a>
 				</div>
 			</div>
-			</div>
 		</div>
+	</div>
 </EditForm>
 
 @code {
 	private Clientes Cliente { get; set; } = new Clientes();
-	private string ErrorNombre { get; set; } = string.Empty;
-	private string GuardarExito { get; set; } = string.Empty;
 	public List<Tecnicos> ListaTecnicos { get; set; } = [];
 
 	public void Nuevo()
@@ -87,25 +84,21 @@
 
 	private async Task<bool> Validar()
 	{
-		ErrorNombre = string.Empty;
 
 		if (await clienteservice.ExisteNombre(Cliente.ClienteNombre))
 		{
-			ErrorNombre = "Ya existe un cliente con este nombre";
+			itoastservice.ShowError("Ya existe un cliente con este nombre");
 			return false;
 		}
 		if (await clienteservice.ExisteRNC(Cliente.Rnc))
 		{
-			ErrorNombre = "El RNC ya esta en uso";
+			itoastservice.ShowError("Ya existe un cliente con este RNC");
 			return false;
 		}
 		return true;
 	}
 	public async Task GuardarClientes()
 	{
-		ErrorNombre = string.Empty;
-		GuardarExito = string.Empty;
-
 		if (!await Validar())
 		{
 			return;
@@ -113,12 +106,13 @@
 		var guardo = await clienteservice.Guardar(this.Cliente);
 		if (guardo != null)
 		{
-			GuardarExito = "Cliente Guardado Correctamente";
+			itoastservice.ShowSuccess("Cliente Guardado Correctamente");
+			navigationmanager.NavigateTo("/Cliente/Index");
 			Nuevo();
 		}
 		else
 		{
-			ErrorNombre = "Error al guardar el Registro";
+			itoastservice.ShowError("Error al guardar el Registro");
 		}
 	}
 }
