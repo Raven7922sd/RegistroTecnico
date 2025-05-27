@@ -17,6 +17,8 @@ public class Tickets
     public string Descripcion{ get; set; }
     [Required(ErrorMessage = "Este campo es obligatorio")]
     public int TecnicoId { get; set; }
-    public Clientes cliente {  get; set; }
-    public Tecnicos tecnico { get; set; }
+    [Required(ErrorMessage = "Este campo es obligatorio")]
+    public int ClienteId{ get; set; }
+    public Clientes Cliente {  get; set; }
+    public Tecnicos Tecnico { get; set; }
 }
