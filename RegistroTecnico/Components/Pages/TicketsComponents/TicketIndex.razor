@@ -1,0 +1,112 @@
+﻿@page "/Ticket/Index"
+
+@inject TecnicoService tecnicoservice
+@inject ClienteService clienteservice
+@inject TicketService ticketservice
+@inject BlazoredToast blazoredtoast
+@inject NavigationManager navigationmanager
+@rendermode InteractiveServer
+
+<div class="container">
+	<div class="card shadow-lg">
+		<div class="card-header position-relative text-center">
+			<h4 class="card-title">Consulta de Tickets</h4>
+			<a href="Ticket/Create" class="btn btn-success"><span class="bi bi-plus-square"></span>Crear</a>
+		</div>
+
+		<div class="card-body">
+			<div class="filters-row">
+				<div class="col-3">
+					<label class="col-form-label"><strong>Filtrar por:</strong></label>
+				</div>
+				<div class="col-4">
+					<label class="col-form-label"><strong>Busqueda:</strong></label>
+				</div>
+			</div>
+
+			<div class="row align-items-center">
+				<div class="col-3 mb-3">
+					<InputText class="form-select" @bind-Value="Filtro">
+						<option value=""selected disabled>Seleccione una opción</option>
+						<option value="TicketId">Ticket Id</option>
+						<option value="Baja">Baja</option>
+						<option value="Media">Media</option>
+						<option value="Alta">Alta</option>
+						<option value="Crítica">Crítica</option>
+					</InputText>
+				</div>
+
+				<div class="col-4">
+					<div class="input-group">
+						<input class="form-control"@bind="ValorFiltro" placeholder="Buscar"/>
+						<button type="button" class="btn btn-ouline-primary bi bi-search"@onclick="Buscar"></button>
+					</div>
+				</div>
+
+				<div class="table-responsive"></div>
+					<table class="table table-hover">
+						<thead>
+							<tr>
+								<th>Ticket Id</th>
+								<th>Prioridad</th>
+								<th>Fecha</th>
+								<th>Técnico Encargado</th>
+								<th>Cliente</th>
+								<th>Editar</th>
+							</tr>
+						</thead>
+						<tbody>
+				
+						@foreach(var ticket in ListaTickets){
+							<tr>
+								<td>@ticket.TicketId</td>
+								<td>@ticket.Prioridad</td>
+								<td>@ticket.Fecha.ToString("dd/mm/yyyy")</td>
+								<td>@ticket.Tecnico?.TecnicoNombre</td>
+								<td>@ticket.Cliente?.ClienteNombre</td>
+								<td><a href="Ticket/Edit/@ticket.TicketId" class="btn btn-outline-primary bi bi-pencil-square"></a></td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+@code{
+	public List<Tickets> ListaTickets { get; set; } = new List<Tickets>();
+	public List<Tecnicos> ListaTecnicos { get; set; } = new List<Tecnicos>();
+	public List<Clientes> ListaClientes { get; set; } = new List<Clientes>();
+
+	public string Filtro { get; set; } = string.Empty;
+	public string ValorFiltro { get; set; } = string.Empty;
+
+	protected override async Task OnInitializedAsync()
+	{
+		ListaTickets = await ticketservice.Listar(t => t.TicketId > 0);
+	}
+
+	private async Task Buscar()
+	{
+		if (Filtro == "TicketId")
+		{
+			if(int.TryParse(ValorFiltro, out var ticketId))
+			{
+				ListaTickets = await ticketservice.Listar(t => t.TicketId == ticketId);
+			}
+		}
+		else if(!string.IsNullOrEmpty(Filtro))
+		{
+			ListaTickets = await ticketservice.Listar(n => n.Prioridad.ToLower() == Filtro.ToLower());
+		}
+		StateHasChanged();
+	}
+
+	private async Task Restablecer()
+	{
+		ListaClientes = await clienteservice.Listar(c => c.ClienteId > 0);
+		Filtro = string.Empty;
+		ValorFiltro = string.Empty;
+	}
+}
