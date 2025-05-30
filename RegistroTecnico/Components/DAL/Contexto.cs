@@ -8,7 +8,7 @@ public class Contexto:DbContext
 
     public virtual DbSet<Tecnicos> Tecnicos { get; set; } 
     public virtual DbSet<Clientes> Clientes { get; set; }
-    public virtual DbSet<Tickets>  Tickets  { get; set; }
+    public virtual DbSet<Tickets> Tickets  { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

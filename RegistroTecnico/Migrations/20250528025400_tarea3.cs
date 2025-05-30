@@ -33,13 +33,13 @@ namespace RegistroTecnico.Migrations
                         column: x => x.ClienteId,
                         principalTable: "Clientes",
                         principalColumn: "ClienteId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Tickets_Tecnicos_TecnicoId",
                         column: x => x.TecnicoId,
                         principalTable: "Tecnicos",
                         principalColumn: "TecnicoId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(

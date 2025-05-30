@@ -1,9 +1,8 @@
 ﻿@page "/Ticket/Index"
-
+@using System.Linq.Expressions
 @inject TecnicoService tecnicoservice
 @inject ClienteService clienteservice
 @inject TicketService ticketservice
-@inject BlazoredToast blazoredtoast
 @inject NavigationManager navigationmanager
 @rendermode InteractiveServer
 
@@ -11,68 +10,108 @@
 	<div class="card shadow-lg">
 		<div class="card-header position-relative text-center">
 			<h4 class="card-title">Consulta de Tickets</h4>
-			<a href="Ticket/Create" class="btn btn-success"><span class="bi bi-plus-square"></span>Crear</a>
+			<a href="/Ticket/Create" class="btn btn-success position-absolute end-0 top-0 mt-2 me-2"><span class="bi bi-plus-square"></span> Crear</a>
 		</div>
 
 		<div class="card-body">
-			<div class="filters-row">
-				<div class="col-3">
-					<label class="col-form-label"><strong>Filtrar por:</strong></label>
-				</div>
-				<div class="col-4">
-					<label class="col-form-label"><strong>Busqueda:</strong></label>
-				</div>
-			</div>
-
-			<div class="row align-items-center">
-				<div class="col-3 mb-3">
-					<InputText class="form-select" @bind-Value="Filtro">
-						<option value=""selected disabled>Seleccione una opción</option>
-						<option value="TicketId">Ticket Id</option>
-						<option value="Baja">Baja</option>
-						<option value="Media">Media</option>
-						<option value="Alta">Alta</option>
-						<option value="Crítica">Crítica</option>
-					</InputText>
-				</div>
-
-				<div class="col-4">
-					<div class="input-group">
-						<input class="form-control"@bind="ValorFiltro" placeholder="Buscar"/>
-						<button type="button" class="btn btn-ouline-primary bi bi-search"@onclick="Buscar"></button>
+			<div class="container border rounded p-3 mb-3 bg-light shadow-sm">
+				<div class="mb-4">
+					<h5>Filtros de Búsqueda</h5>
+					<div class="row g-3 mt-1">
+						<div class="col-md-3">
+							<label class="form-label"><strong>Desde</strong></label>
+							<div class="input-group">
+								<span class="input-group-text bi bi-calendar-date"></span>
+								<input type="date" @bind="FechaDesde" class="form-control" />
+							</div>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label"><strong>Hasta</strong></label>
+							<div class="input-group">
+								<span class="input-group-text bi bi-calendar-date-fill"></span>
+								<input type="date" @bind="FechaHasta" class="form-control" />
+							</div>
+						</div>
 					</div>
 				</div>
 
-				<div class="table-responsive"></div>
-					<table class="table table-hover">
-						<thead>
-							<tr>
-								<th>Ticket Id</th>
-								<th>Prioridad</th>
-								<th>Fecha</th>
-								<th>Técnico Encargado</th>
-								<th>Cliente</th>
-								<th>Editar</th>
-							</tr>
-						</thead>
-						<tbody>
-				
-						@foreach(var ticket in ListaTickets){
-							<tr>
-								<td>@ticket.TicketId</td>
-								<td>@ticket.Prioridad</td>
-								<td>@ticket.Fecha.ToString("dd/mm/yyyy")</td>
-								<td>@ticket.Tecnico?.TecnicoNombre</td>
-								<td>@ticket.Cliente?.ClienteNombre</td>
-								<td><a href="Ticket/Edit/@ticket.TicketId" class="btn btn-outline-primary bi bi-pencil-square"></a></td>
-							</tr>
-						}
-					</tbody>
-				</table>
+				<div class="mb-2">
+					<div class="row">
+						<div class="col-md-3">
+							<label class="form-label fw-bold">Filtrar por</label>
+						</div>
+						<div class="col-md-4">
+							<label class="form-label fw-bold">Búsqueda</label>
+						</div>
+					</div>
+				</div>
+
+				<div class="row align-items-center g-3">
+					<div class="col-md-3">
+						<InputSelect class="form-select" @bind-Value="Filtro">
+							<option value="" disabled selected>Seleccione una opción</option>
+							<option value="TicketId">Ticket Id</option>
+							<option value="ClienteNombre">Cliente</option>
+							<option value="TecnicoNombre">Técnico</option>
+							<option value="Asunto">Asunto</option>
+							<option value="Descripcion">Descripción</option>
+							<option value="Baja">Baja</option>
+							<option value="Media">Media</option>
+							<option value="Alta">Alta</option>
+							<option value="Critica">Crítica</option>
+						</InputSelect>
+					</div>
+
+					<div class="col-md-4">
+						<div class="input-group">
+							<input class="form-control" @bind="ValorFiltro" placeholder="Buscador" />
+							<button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+						</div>
+					</div>
+
+					<div class="col-5 border-start border-2">
+						<div class="input-group">
+							<button class="btn btn-outline-primary" @onclick="Restablecer">Restablecer</button>
+						</div>
+					</div>
+				</div>
 			</div>
+
+			<div class="table-responsive"></div>
+			<table class="table table-hover">
+				<thead>
+					<tr>
+						<th>Ticket Id</th>
+						<th>Cliente</th>
+						<th>Asunto</th>
+						<th>Prioridad</th>
+						<th>Descripción</th>
+						<th>Técnico Encargado</th>
+						<th>Fecha</th>
+						<th>Editar</th>
+					</tr>
+				</thead>
+				<tbody>
+
+					@foreach (var ticket in ListaTickets)
+					{
+						<tr>
+							<td>@ticket.TicketId</td>
+							<td>@ticket.Cliente?.ClienteNombre</td>
+							<td>@ticket.Asunto</td>
+							<td>@ticket.Prioridad</td>
+							<td>@ticket.Descripcion</td>
+							<td>@ticket.Tecnico?.TecnicoNombre</td>
+							<td>@ticket.Fecha.ToString("dd/MM/yyyy")</td>
+							<td><a href="Ticket/Edit/@ticket.TicketId" class="btn btn-outline-primary bi bi-pencil-square"></a></td>
+						</tr>
+					}
+				</tbody>
+			</table>
 		</div>
 	</div>
 </div>
+
 
 @code{
 	public List<Tickets> ListaTickets { get; set; } = new List<Tickets>();
@@ -81,32 +120,65 @@
 
 	public string Filtro { get; set; } = string.Empty;
 	public string ValorFiltro { get; set; } = string.Empty;
+	public DateTime? FechaDesde{ get; set; }
+	public DateTime? FechaHasta{ get; set; }
 
 	protected override async Task OnInitializedAsync()
 	{
-		ListaTickets = await ticketservice.Listar(t => t.TicketId > 0);
+		ListaTickets = await ticketservice.ListarTickets(t => t.TicketId > 0);
 	}
 
 	private async Task Buscar()
 	{
-		if (Filtro == "TicketId")
+		Expression<Func<Tickets, bool>> filtro = t => true;
+
+		if (Filtro == "TicketId" && int.TryParse(ValorFiltro, out var ticketId))
 		{
-			if(int.TryParse(ValorFiltro, out var ticketId))
-			{
-				ListaTickets = await ticketservice.Listar(t => t.TicketId == ticketId);
-			}
+			filtro = filtro.AndAlso(t => t.TicketId == ticketId);
 		}
-		else if(!string.IsNullOrEmpty(Filtro))
+		else if (Filtro == "ClienteNombre")
 		{
-			ListaTickets = await ticketservice.Listar(n => n.Prioridad.ToLower() == Filtro.ToLower());
+			filtro = filtro.AndAlso(t =>
+				t.Cliente != null && t.Cliente.ClienteNombre.ToLower().Contains(ValorFiltro.ToLower()));
 		}
+		else if (Filtro == "TecnicoNombre")
+		{
+			filtro = filtro.AndAlso(t =>
+				t.Tecnico != null && t.Tecnico.TecnicoNombre.ToLower().Contains(ValorFiltro.ToLower()));
+		}
+		else if (Filtro == "Asunto")
+		{
+			filtro = filtro.AndAlso(t => t.Asunto.ToLower() == ValorFiltro.ToLower());
+		}
+		else if (Filtro == "Descripcion")
+		{
+			filtro = filtro.AndAlso(t => t.Descripcion.ToLower() == ValorFiltro.ToLower());
+		}
+		else if (!string.IsNullOrEmpty(Filtro))
+		{
+			filtro = filtro.AndAlso(t => t.Prioridad.ToLower() == Filtro.ToLower());
+		}
+		if (FechaDesde.HasValue)
+		{
+			var desde = DateOnly.FromDateTime(FechaDesde.Value);
+			filtro = filtro.AndAlso(t => t.Fecha >= desde);
+		}
+		if (FechaHasta.HasValue)
+		{
+			var hasta = DateOnly.FromDateTime(FechaHasta.Value);
+			filtro = filtro.AndAlso(t => t.Fecha <= hasta);
+		}
+		ListaTickets = await ticketservice.ListarTickets(filtro);
+
 		StateHasChanged();
 	}
 
 	private async Task Restablecer()
 	{
-		ListaClientes = await clienteservice.Listar(c => c.ClienteId > 0);
+		ListaTickets = await ticketservice.ListarTickets(t => t.TicketId > 0);
 		Filtro = string.Empty;
 		ValorFiltro = string.Empty;
+		FechaDesde = null;
+		FechaHasta = null;
 	}
 }

@@ -12,7 +12,7 @@ using RegistroTecnico.Components.DAL;
 namespace RegistroTecnico.Migrations
 {
     [DbContext(typeof(Contexto))]
-    [Migration("20250528021053_tarea3")]
+    [Migration("20250528025400_tarea3")]
     partial class tarea3
     {
         /// <inheritdoc />
@@ -139,13 +139,13 @@ namespace RegistroTecnico.Migrations
                     b.HasOne("RegistroTecnico.Components.Models.Clientes", "Cliente")
                         .WithMany()
                         .HasForeignKey("ClienteId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("RegistroTecnico.Components.Models.Tecnicos", "Tecnico")
                         .WithMany()
                         .HasForeignKey("TecnicoId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Cliente");

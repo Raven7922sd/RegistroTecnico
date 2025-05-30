@@ -48,9 +48,13 @@ public class TicketService(IDbContextFactory<Contexto>DbFactory)
         return await context.Tickets.AsNoTracking().Where(l =>l.TicketId==TicketId).ExecuteDeleteAsync()>0;
     }
 
-    public async Task<List<Tickets>> Listar(Expression<Func<Tickets, bool>> criterio)
+    public async Task<List<Tickets>> ListarTickets(Expression<Func<Tickets, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.Tickets.Where(criterio).Include(c => c.Cliente).Include(t => t.Tecnico).AsNoTracking().ToListAsync();
+        return await contexto.Tickets.Where(criterio)
+            .Include(c=>c.Cliente)
+            .Include(t=>t.Tecnico)
+            .AsNoTracking()
+            .ToListAsync();
     }
 }

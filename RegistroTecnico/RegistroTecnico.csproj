@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Components\DAL\" />
     <Folder Include="Migrations\" />
   </ItemGroup>
 
