@@ -6,6 +6,7 @@ public class Tickets
     [Key]
     public int TicketId { get; set; }
     public DateOnly Fecha { get; set; }= DateOnly.FromDateTime(DateTime.Now);
+
     [Required(ErrorMessage = "Este campo es obligatorio")]
     [Range(0.01, double.MaxValue, ErrorMessage = "El tiempo invertido debe ser un número positivo")]
     public double TiempoInvertido { get; set; }
