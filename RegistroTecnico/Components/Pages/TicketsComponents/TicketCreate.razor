@@ -42,7 +42,7 @@
 				</div>
 
 				<div class="mb-3">
-					<label class="form-label"><strong>Descripción</strong></label>
+					<label class="form-label"><strong>Descripci&oacute;n</strong></label>
 					<textarea class="form-control" @bind="Ticket.Descripcion" rows="5" placeholder="Describa el problema sucedido"></textarea>
 					<ValidationMessage For="(() => Ticket.Descripcion)" />
 				</div>
@@ -54,9 +54,9 @@
 				</div>
 
 				<div class="mb-3">
-					<label class="form-label"><strong>Técnico Encargado</strong></label>
+					<label class="form-label"><strong>T&eacute;cnico Encargado</strong></label>
 					<InputSelect class="form-control form-select" @bind-Value="Ticket.TecnicoId">
-						<option value=0 selected disabled>Seleccione el Técnico Encargado</option>
+						<option value=0 selected disabled>Seleccione el T&eacute;cnico Encargado</option>
 						@foreach (var tecnico in ListaTecnicos)
 						{
 							<option value="@tecnico.TecnicoId">@tecnico.TecnicoNombre</option>
