@@ -85,11 +85,13 @@ public class TicketService(IDbContextFactory<Contexto>DbFactory)
         }
         else if (filtroCampo == "Asunto")
         {
-            filtro = filtro.AndAlso(t => t.Asunto.ToLower() == valorFiltro.ToLower());
+            filtro = filtro.AndAlso(t =>
+                t.Asunto.ToLower().Contains(valorFiltro.ToLower()));
         }
         else if (filtroCampo == "Descripcion")
         {
-            filtro = filtro.AndAlso(t => t.Descripcion.ToLower() == valorFiltro.ToLower());
+            filtro = filtro.AndAlso(t => 
+            t.Descripcion.ToLower().Contains(valorFiltro.ToLower()));
         }
         else if (!string.IsNullOrEmpty(filtroCampo))
         {
