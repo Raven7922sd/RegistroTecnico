@@ -1,0 +1,123 @@
+﻿@page "/Ticket/Create"
+@inject TecnicoService tecnicoservice
+@inject ClienteService clienteservice
+@inject TicketService ticketservice
+@rendermode InteractiveServer
+@inject IToastService itoastservice
+@inject NavigationManager navigationmanager
+
+<PageTitle>Crear Ticket</PageTitle>
+
+<EditForm Model="Ticket" OnValidSubmit="GuardarTicket">
+	<DataAnnotationsValidator />
+
+	<div class="container">
+		<div class="card shadow-lg">
+			<div class="card-header">
+				<h4 class="card-title position-relative text-center">Registro de Tickets</h4>
+			</div>
+
+			<div class="card-body">
+				<div class="mb-3">
+					<label class="form-label"><strong>Ticket Id</strong></label>
+					<InputNumber class="form-control" @bind-Value="Ticket.TicketId" readonly />
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Prioridad</strong></label>
+					<InputSelect class="form-control" @bind-Value="Ticket.Prioridad">
+						<option value=0 selected disabled>Seleccione una prioridad</option>
+						<option value="Baja">Baja</option>
+						<option value="Media">Media</option>
+						<option value="Alta">Alta</option>
+						<option value="Critica">Crítica</option>
+					</InputSelect>
+					<ValidationMessage For="(() => Ticket.Prioridad)" />
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Asunto</strong></label>
+					<InputText class="form-control" @bind-Value="Ticket.Asunto" placeholder="Escriba el asunto" />
+					<ValidationMessage For="(() => Ticket.Asunto)" />
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Descripci&oacute;n</strong></label>
+					<textarea class="form-control" @bind="Ticket.Descripcion" rows="5" placeholder="Describa el problema sucedido"></textarea>
+					<ValidationMessage For="(() => Ticket.Descripcion)" />
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Tiempo Invertido</strong></label>
+					<InputNumber class="form-control" @bind-Value="Ticket.TiempoInvertido" />
+					<ValidationMessage For="(() => Ticket.TiempoInvertido)" />
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>T&eacute;cnico Encargado</strong></label>
+					<InputSelect class="form-control form-select" @bind-Value="Ticket.TecnicoId">
+						<option value=0 selected disabled>Seleccione el T&eacute;cnico Encargado</option>
+						@foreach (var tecnico in ListaTecnicos)
+						{
+							<option value="@tecnico.TecnicoId">@tecnico.TecnicoNombre</option>
+						}
+					</InputSelect>
+					<ValidationMessage For="(() => Ticket.TecnicoId)" />
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Cliente</strong></label>
+					<InputSelect class="form-control form-select" @bind-Value="Ticket.ClienteId">
+						<option value=0 selected disabled>Seleccione al Cliente correspondiente</option>
+						@foreach (var cliente in ListaClientes)
+						{
+							<option value="@cliente.ClienteId">@cliente.ClienteNombre</option>
+						}
+					</InputSelect>
+					<ValidationMessage For="(() => Ticket.ClienteId)" />
+				</div>
+			</div>
+
+			<div class="card-footer text-center mt-2">
+				<div class="btn-group" role="group">
+					<button type="reset" class="btn btn-outline-primary bi bi-arrow-clockwise" @onclick="Nuevo">Limpiar</button>
+					<button type="submit" class="btn btn-outline-success bi bi-floppy"> Guardar</button>
+					<a href="/Ticket/Index" class="btn btn-outline-secondary"><span class="bi bi-arrow-left"></span>Volver</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</EditForm>
+
+@code {
+	private Tickets Ticket { get; set; } = new Tickets();
+	public List<Tecnicos> ListaTecnicos { get; set; } = [];
+	public List<Clientes> ListaClientes { get; set; } = [];
+
+	public void Nuevo()
+	{
+		this.Ticket = new Tickets();
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		Ticket = new Tickets();
+		ListaTecnicos = await tecnicoservice.Listar(t => t.TecnicoId > 0);
+		ListaClientes = await clienteservice.Listar(c => c.ClienteId > 0);
+	}
+
+	public async Task GuardarTicket()
+	{
+		var guardo = await ticketservice.Guardar(this.Ticket);
+		if (guardo != null)
+		{
+			itoastservice.ShowSuccess("Ticket Guardado Correctamente");
+			navigationmanager.NavigateTo("/Ticket/Index");
+			Nuevo();
+		}
+		else
+		{
+			itoastservice.ShowError("Error al guardar el Registro");
+		}
+	}
+}

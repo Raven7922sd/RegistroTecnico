@@ -3,13 +3,11 @@
 @inject ClienteService clientesService
 @inject NavigationManager navigationManager
 @rendermode InteractiveServer
+@inject IToastService itoastservice
 
 <PageTitle>Editar</PageTitle>
 <EditForm Model="Cliente" OnValidSubmit="Guardar">
 	<DataAnnotationsValidator />
-
-	<label class="text-danger fs-5" hidden="@string.IsNullOrEmpty(ErrorNombre)">@ErrorNombre</label>
-	<label class="text-success fs-5" hidden="@string.IsNullOrEmpty(GuardarExito)">@GuardarExito</label>
 
 	<div class="container">
 		<div class="card shadow-lg">
@@ -47,7 +45,8 @@
 					<div class="input-group">
 						<InputSelect class="form-control form-select" @bind-Value="Cliente.TecnicoId">
 							<option value="" selected disabled>Elija una opcion</option>
-							@foreach (var tecnico in ListaTecnicos){
+							@foreach (var tecnico in ListaTecnicos)
+							{
 								<option value="@tecnico.TecnicoId">@tecnico.TecnicoNombre</option>
 							}
 						</InputSelect>
@@ -57,9 +56,9 @@
 
 			<div class="card-footer text-center mt-2">
 				<div class="btn-group" role="group">
-				<a type="button" href="/Cliente/Eliminar/@Cliente.ClienteId" class="btn btn-outline-danger"><span class="bi bi-trash"></span>Eliminar</a>
-				<button type="submit" class="btn btn-outline-success"><span class="bi bi-floppy"></span> Guardar</button>
-				<a href="/Cliente/Index" class="btn btn-outline-secondary"><span class="bi bi-arrow-left"></span>Volver</a>
+					<a type="button" href="/Cliente/Eliminar/@Cliente.ClienteId" class="btn btn-outline-danger"><span class="bi bi-trash"></span>Eliminar</a>
+					<button type="submit" class="btn btn-outline-success"><span class="bi bi-floppy"></span> Guardar</button>
+					<a href="/Cliente/Index" class="btn btn-outline-secondary"><span class="bi bi-arrow-left"></span>Volver</a>
 				</div>
 			</div>
 		</div>
@@ -71,8 +70,6 @@
 	public int ClienteId { get; set; }
 	private Clientes Cliente { get; set; } = new Clientes();
 	public List<Tecnicos> ListaTecnicos { get; set; } = new List<Tecnicos>();
-	private string ErrorNombre { get; set; } = string.Empty;
-	private string GuardarExito { get; set; } = string.Empty;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -82,19 +79,18 @@
 
 	private async Task<bool> Validar()
 	{
-		ErrorNombre = string.Empty;
 
 		if (await clientesService.ExisteNombre(Cliente.ClienteNombre) &&
 			Cliente.ClienteNombre != (await clientesService.Buscar(ClienteId)).ClienteNombre)
 		{
-			ErrorNombre = "Ya existe un cliente con este nombre.";
+			itoastservice.ShowSuccess("Ya existe un cliente con este nombre.");
 			return false;
 		}
 
 		if (await clientesService.ExisteRNC(Cliente.Rnc) &&
 			Cliente.Rnc != (await clientesService.Buscar(ClienteId)).Rnc)
 		{
-			ErrorNombre = "Ya existe un cliente con este RNC.";
+
 			return false;
 		}
 
@@ -103,9 +99,6 @@
 
 	public async Task Guardar()
 	{
-		ErrorNombre = string.Empty;
-		GuardarExito = string.Empty;
-
 		if (!await Validar())
 		{
 			return;
@@ -113,11 +106,12 @@
 		var guardo = await clientesService.Guardar(this.Cliente);
 		if (guardo != null)
 		{
-			GuardarExito = "Cliente Modificado Correctamente";
+			itoastservice.ShowSuccess("Cliente Modificado Correctamente");
+			navigationManager.NavigateTo("/Cliente/Index");
 		}
 		else
 		{
-			ErrorNombre = "Error al modificar el Registro";
+			itoastservice.ShowError("Error al modificar el Registro");
 		}
 	}
 }

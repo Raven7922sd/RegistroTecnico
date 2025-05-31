@@ -3,11 +3,9 @@
 @inject TecnicoService tecnicoservice
 @inject NavigationManager navigationmanager
 @rendermode InteractiveServer
+@inject IToastService itoastservice
 
 <PageTitle>Eliminar</PageTitle>
-
-<label class="text-success fs-5" hidden="@string.IsNullOrEmpty(Confirmacion)">@Confirmacion</label>
-<label class="text-danger fs-5" hidden="@string.IsNullOrEmpty(Pregunta)">@Pregunta</label>
 
 <div class="container">
 	<div class="card shadow-lg">
@@ -37,13 +35,11 @@
 	[Parameter]
 	public int ClienteId { get; set; }
 	public Clientes Cliente { get; set; } = new Clientes();
-	public string Confirmacion { get; set; } = string.Empty;
-	public string Pregunta { get; set; } = string.Empty;
 
 	protected override async Task OnInitializedAsync()
 	{
 		Cliente = await clienteservice.Buscar(ClienteId);
-		Pregunta = "¿Está seguro de eliminar al cliente?";
+		itoastservice.ShowError("¿Está seguro de eliminar al cliente?");
 		Cliente.Tecnico = await tecnicoservice.Buscar(Cliente.TecnicoId);
 	}
 
@@ -52,12 +48,12 @@
 		var eliminado = await clienteservice.Eliminar(ClienteId);
 		if (eliminado != null)
 		{
-			Confirmacion = "Cliente eliminado correctamente.";
-			Pregunta = string.Empty;
+			itoastservice.ShowSuccess("Cliente eliminado correctamente.");
+			navigationmanager.NavigateTo("/Cliente/Index");
 		}
 		else
 		{
-			Confirmacion = "No se pudo eliminar al cliente.";
+			 itoastservice.ShowError("No se pudo eliminar al cliente.");
 		}
 	}
 }

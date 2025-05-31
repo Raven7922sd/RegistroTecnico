@@ -1,0 +1,65 @@
+﻿@page "/Ticket/Eliminar/{TicketId:int}"
+@inject TecnicoService tecnicoservice
+@inject ClienteService clienteservice
+@inject TicketService ticketservice
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+@inject IToastService itoastservice
+
+<PageTitle>Eliminar</PageTitle>
+
+<div class="container">
+	<div class="card shadow-lg">
+		<div class="card-header text-center">
+			<h5 class="card-title">Eliminar Ticket</h5>
+		</div>
+		<div class="card-body">
+			<p><strong>Ticket Id: </strong>@Ticket.TicketId</p>
+			<p><strong>Prioridad: </strong>@Ticket.Prioridad</p>
+			<p><strong>Fecha: </strong>@Ticket.Fecha.ToString("dd/MM/yyyy")</p>
+			<p><strong>Asunto: </strong>@Ticket.Asunto</p>
+			<p><strong>Descripción: </strong>@Ticket.Descripcion</p>
+			<p><strong>Técnico Encargado: </strong>@Ticket.Tecnico?.TecnicoNombre</p>
+			<p><strong>Cliente: </strong>@Ticket.Cliente?.ClienteNombre</p>
+
+			<div class="card-footer text-center mt-2">
+				<div class="btn-group" role="group">
+					<button class="btn btn-outline-danger" @onclick="Eliminar"><span class="bi bi-trash"></span>Eliminar</button>
+					<a href="/Ticket/Index" class="btn btn-outline-secondary"><span class="bi bi-arrow-left"></span>Volver</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@code {
+	[Parameter]
+	public int TicketId { get; set; }
+
+	private Tickets Ticket { get; set; } = new Tickets();
+	private string Confirmacion { get; set; } = string.Empty;
+	private string Pregunta { get; set; } = string.Empty;
+
+	protected override async Task OnInitializedAsync()
+	{
+		itoastservice.ShowError("¿Esta seguro de querer eliminar el Ticket?");
+		Ticket = await ticketservice.BuscarTicket(TicketId);
+		Ticket.Tecnico = await tecnicoservice.Buscar(Ticket.TecnicoId);
+		Ticket.Cliente = await clienteservice.Buscar(Ticket.ClienteId);
+
+	}
+
+	public async Task Eliminar()
+	{
+		var eliminado = await ticketservice.EliminarTicket(Ticket.TicketId);
+		if (eliminado != null)
+		{
+			itoastservice.ShowSuccess("Ticket Eliminado Correctamente");
+			navigationManager.NavigateTo("/Ticket/Index");
+		}
+		else
+		{
+			itoastservice.ShowError("Error al eliminar el Registro");
+		}
+	}
+}
