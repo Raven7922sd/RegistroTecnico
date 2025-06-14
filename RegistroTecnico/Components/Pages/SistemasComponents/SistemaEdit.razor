@@ -1,0 +1,131 @@
+﻿@page "/Sistema/Edit/{SistemaId:int}"
+@inject SistemaService sistemaService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+@inject IToastService itoastservice
+
+<PageTitle>Sistema Edit</PageTitle>
+<EditForm Model="sistemas" OnValidSubmit="Guardar">
+	<DataAnnotationsValidator />
+
+	<div class="container">
+		<div class="card shadow-lg">
+			<div class="card-header text-center">
+				<h5 class="card-title">Registro de Sistemas</h5>
+			</div>
+
+			<div class="card-body">
+				<div class="mb-3">
+					<label class="form-label"><strong>Sistema Id</strong></label>
+					<InputNumber class="form-control" @bind-Value="sistemas.SistemaId" readonly></InputNumber>
+				</div>
+
+				<div class="mb-3">
+					<div class="mb-3">
+						<label class="form-label"><strong>Prioridad</strong></label>
+						<InputSelect class="form-select" @bind-Value="sistemas.Complejidad">
+							<option value=0 selected disabled>Seleccione una complejidad</option>
+							<option value="Baja">Baja</option>
+							<option value="Media">Media</option>
+							<option value="Alta">Alta</option>
+						</InputSelect>
+						<ValidationMessage For="(() => sistemas.Complejidad)" />
+					</div>
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Descripci&oacute;n</strong></label>
+					<textarea class="form-control" @bind="sistemas.Descripcion" rows="5" placeholder="Descripción..."></textarea>
+					<ValidationMessage For="(() => sistemas.Descripcion)" />
+				</div>
+			</div>
+
+			<div class="card-footer text-center mt-2">
+				<div class="btn-group" role="group">
+					<a href="/Ticket/Index" class="btn btn-outline-secondary"><span class="bi bi-box-arrow-left"></span> Volver</a>
+					<button type="submit" class="btn btn-outline-success"><span class="bi bi-floppy"></span> Guardar</button>
+					<a type="button" class="btn btn-outline-danger" @onclick="() => MostrarModal = true"><span class="bi bi-trash"></span>Eliminar</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</EditForm>
+@if (MostrarModal)
+{
+	<div class="modal fade show d-block" tabindex="-1" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content shadow">
+				<div class="modal-header bg-primary text-white text-center">
+					<h5 class="modal-tile">Eliminar Ticket</h5>
+					<button type="button" class="btn-close" @onclick="CerrarModal" aria-label="Cerrar"></button>
+				</div>
+				<div class="modal-body text-danger">
+					<p>¿Est&aacute; seguro de eliminar este Ticket?</p>
+				</div>
+				<div class="card-header">
+					<h5 class="card-title text-center"><strong>Datos del Ticket</strong></h5>
+				</div>
+				<div class="mb-3 ms-3">
+					<p><strong>Ticket Id: </strong>@sistemas.SistemaId</p>
+					<p><strong>Prioridad: </strong>@sistemas.Complejidad</p>
+					<p><strong>Descripci&oacute;n: </strong>@sistemas.Descripcion</p>
+				</div>
+				<div class="modal-footer d-flex justify-content-center">
+					<div class="btn-group" role="group">
+						<button type="button" class="btn btn-outline-secondary bi bi-box-arrow-left" @onclick="CerrarModal"> Volver</button>
+						<button class="btn btn-outline-danger bi bi-trash" @onclick="EliminarSistema"> Eliminar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+@code {
+	[Parameter]
+	public int SistemaId { get; set; }
+	private Sistemas sistemas { get; set; } = new Sistemas();
+	private bool MostrarModal = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		sistemas = await sistemaService.Buscar(SistemaId);
+	}
+
+	private void CerrarModal()
+	{
+		MostrarModal = false;
+	}
+
+	public async Task Guardar()
+	{
+		var guardo = await sistemaService.Guadar(this.sistemas);
+		if (guardo != null)
+		{
+			itoastservice.ShowSuccess("Sistema Modificado Correctamente");
+			navigationManager.NavigateTo("/Sistema/Index");
+		}
+		else
+		{
+			itoastservice.ShowError("Error al modificar el Sistema");
+		}
+	}
+
+	private async Task EliminarSistema()
+	{
+		if (sistemas != null)
+		{
+			var Eliminado = await sistemaService.Eliminar(sistemas.SistemaId);
+			if (Eliminado)
+			{
+				itoastservice.ShowSuccess("Sistema eliminado correctamente");
+				navigationManager.NavigateTo("/Sistema/Index");
+			}
+			else
+			{
+				itoastservice.ShowError("Error al eliminar el sistema");
+			}
+			MostrarModal = false;
+		}
+	}
+}
