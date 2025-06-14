@@ -1,0 +1,81 @@
+﻿@page "/Sistema/Create"
+@inject SistemaService sistemaService
+@rendermode InteractiveServer
+@inject IToastService itoastservice
+@inject NavigationManager navigationmanager
+
+<PageTitle>Crear Sistema</PageTitle>
+
+<EditForm Model="sistemas" OnValidSubmit="Guardar">
+	<DataAnnotationsValidator />
+
+	<div class="container">
+		<div class="card shadow-lg">
+			<div class="card-header">
+				<h4 class="card-title position-relative text-center">Registro de Sistemas</h4>
+			</div>
+
+			<div class="card-body">
+				<div class="mb-3">
+					<label class="form-label"><strong>Sistema Id</strong></label>
+					<InputNumber class="form-control" @bind-Value="sistemas.SistemaId" readonly />
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Complejidad</strong></label>
+					<InputSelect class="form-control" @bind-Value="sistemas.Complejidad">
+						<option value=0 selected disabled>Seleccione una complejidad</option>
+						<option value="Baja">Baja</option>
+						<option value="Media">Media</option>
+						<option value="Alta">Alta</option>
+					</InputSelect>
+					<ValidationMessage For="(() => sistemas.Complejidad)" />
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Descripci&oacute;n</strong></label>
+					<textarea class="form-control" @bind="sistemas.Descripcion" rows="5" placeholder="Descripción"></textarea>
+					<ValidationMessage For="(() => sistemas.Descripcion)" />
+				</div>
+			</div>
+
+			<div class="card-footer text-center mt-2">
+				<div class="btn-group" role="group">
+					<button type="reset" class="btn btn-outline-primary bi bi-arrow-clockwise" @onclick="Nuevo">Limpiar</button>
+					<button type="submit" class="btn btn-outline-success bi bi-floppy"> Guardar</button>
+					<a href="/Sistema/Index" class="btn btn-outline-secondary"><span class="bi bi-arrow-left"></span>Volver</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</EditForm>
+
+@code {
+	private Sistemas sistemas { get; set; } = new Sistemas();
+
+	public void Nuevo()
+	{
+		this.sistemas = new Sistemas();
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		sistemas = new Sistemas();
+
+	}
+
+	private async Task Guardar()
+	{
+		var guardo = await sistemaService.Guadar(this.sistemas);
+		if (guardo != null)
+		{
+			itoastservice.ShowSuccess("Sistema Guardado Correctamente");
+			navigationmanager.NavigateTo("/Sistema/Index");
+			Nuevo();
+		}
+		else
+		{
+			itoastservice.ShowError("Error al guardar el Sistema");
+		}
+	}
+}
