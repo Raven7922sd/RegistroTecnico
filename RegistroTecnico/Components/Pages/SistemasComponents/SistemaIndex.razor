@@ -1,0 +1,160 @@
+﻿@page "/Sistema/Index"
+@using RegistroTecnico.Components.Models.Paginacion
+@inject SistemaService sistemaservice
+@inject IToastService itoastservice
+@rendermode InteractiveServer
+
+<PageTitle>Index</PageTitle>
+
+<div class="container">
+	<div class="card shadow-lg">
+		<div class="card-header">
+			<h4 class="card-title text-center">Consulta de Sistemas</h4>
+		</div>
+		<div class="card-body">
+			
+			<div class="d-flex justify-content-between">
+				<label class="form-label"><strong>Filtros de Búsqueda</strong></label>
+				<a href="/Sistema/Create" class="btn btn-success bi bi-plus-square"> Crear</a>
+			</div>
+
+			<div class="row align-items-end mb-4 mt-3">
+
+				<div class="col-md-3">
+					<label class="form-label"><strong>Filtrar Por:</strong></label>
+					<InputSelect class="form-select" @bind-Value="Filtro">
+						<option value="SistemaId">Id</option>
+						<option value="Baja">Complejidad "Baja"</option>
+						<option value="Media">Complejidad "Media"</option>
+						<option value="Alta">Complejidad "Alta"</option>
+						<option value="Descripcion">Descripción</option>
+					</InputSelect>
+
+					<label class="form-label mt-4"><strong>Desde:</strong></label>
+					<div class="input-group">
+						<span class="input-group-text bi bi-calendar-date"></span>
+						<input type="date" @bind="FechaDesde" class="form-control" />
+					</div>
+				</div>
+
+				<div class="col-md-5">
+					<label class="form-label"><strong>Búsqueda</strong></label>
+					<div class="input-group">
+						<input class="form-control flex-grow-1" @bind-value="ValorFiltro" placeholder="Buscar" />
+						<button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+						<button type="button" class="btn btn-outline-secondary ms-2" @onclick="Restablecer">Restablecer</button>
+					</div>
+					
+					<div class="col-md-7">
+						<label class="form-label mt-4"><strong>Hasta:</strong></label>
+						<div class="input-group">
+							<span class="input-group-text bi bi-calendar-date-fill"></span>
+							<input type="date" class="form-control" @bind-value="FechaHasta" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="tabletable-responsive">
+				<table class="table table-hover">
+					<thead>
+						<tr>
+							<th>Id</th>
+							<th>Complejidad</th>
+							<th>Descripci&oacute;n</th>
+							<th>Fecha</th>
+							<th>Editar</th>
+						</tr>
+					</thead>
+					<tbody>
+						@if (ResultadoPaginado != null)
+						{
+							foreach (var sistemas in ResultadoPaginado.Items)
+							{
+								<tr>
+									<td>@sistemas.SistemaId</td>
+									<td>@sistemas.Complejidad</td>
+									<td>@sistemas.Descripcion</td>
+									<td>@sistemas.Fecha.ToString("dd/MM/yyyy")</td>
+									<td>
+										<a href="Sistema/Edit/@sistemas.SistemaId" class="btn btn-outline-primary bi bi-pencil-square"></a>
+									</td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+			@if (ResultadoPaginado != null && ResultadoPaginado.TotalPaginas > 1)
+			{
+				<nav aria-label="Paginación">
+					<ul class="pagination justify-content-center mt-4">
+						<li class="page-item @(ResultadoPaginado.TienePaginaAnterior ? "" : "disabled")">
+							<button class="page-link" @onclick="() => CambiarPagina(PaginaActual - 1)">Anterior</button>
+						</li>
+
+						@for (int i = 1; i <= ResultadoPaginado.TotalPaginas; i++)
+						{
+							<li class="page-item @(i == PaginaActual ? "active" : "")">
+								<button class="page-link" @onclick="() => CambiarPagina(i)">@i</button>
+							</li>
+						}
+
+						<li class="page-item @(ResultadoPaginado.TienePaginaSiguiente ? "" : "disabled")">
+							<button class="page-link" @onclick="() => CambiarPagina(PaginaActual + 1)">Siguiente</button>
+						</li>
+					</ul>
+				</nav>
+			}
+		</div>
+	</div>
+</div>
+
+@code {
+	public List<Sistemas> ListaSistemas { get; set; } = new List<Sistemas>();
+	public string Filtro { get; set; }
+	public string ValorFiltro { get; set; } = string.Empty;
+	public DateTime? FechaDesde { get; set; }
+	public DateTime? FechaHasta { get; set; }
+
+	private PaginacionResultado<Sistemas> ResultadoPaginado { get; set; }
+	private int PaginaActual { get; set; } = 1;
+	private const int TamañoPagina = 5;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await CargarPagina(PaginaActual);
+	}
+
+	private async Task Buscar()
+	{
+		PaginaActual = 1;
+		await CargarPagina(PaginaActual);
+	}
+
+	private async Task Restablecer()
+	{
+		Filtro = string.Empty;
+		ValorFiltro = string.Empty;
+		FechaDesde = null;
+		FechaHasta = null;
+		PaginaActual = 1;
+
+		await CargarPagina(PaginaActual);
+	}
+
+	private async Task CargarPagina(int pagina)
+	{
+		ResultadoPaginado = await sistemaservice.BuscarSistemasAsync(
+		Filtro, ValorFiltro, FechaDesde, FechaHasta, pagina, TamañoPagina);
+		PaginaActual = pagina;
+	}
+
+	private async Task CambiarPagina(int nuevaPagina)
+	{
+		if (nuevaPagina >= 1 && nuevaPagina <= ResultadoPaginado.TotalPaginas)
+		{
+			await CargarPagina(nuevaPagina);
+		}
+	}
+}
