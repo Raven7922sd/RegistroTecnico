@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using RegistroTecnico.Components.DAL;
 using RegistroTecnico.Components.Models;
+using RegistroTecnico.Components.Models.Paginacion;
 
 namespace RegistroTecnico.Components.Services;
 
@@ -61,59 +62,55 @@ public class TicketService(IDbContextFactory<Contexto>DbFactory)
             .ToListAsync();
     }
 
-    public async Task<List<Tickets>> BuscarTicketsAsync(
+    public async Task<PaginacionResultado<Tickets>> BuscarTicketsAsync(
     string filtroCampo,
     string valorFiltro,
     DateTime? fechaDesde,
-    DateTime? fechaHasta)
+    DateTime? fechaHasta,
+    int pagina,
+    int tamanioPagina)
     {
         Expression<Func<Tickets, bool>> filtro = t => true;
 
         if (filtroCampo == "TicketId" && int.TryParse(valorFiltro, out var ticketId))
-        {
             filtro = filtro.AndAlso(t => t.TicketId == ticketId);
-        }
         else if (filtroCampo == "ClienteNombre")
-        {
-            filtro = filtro.AndAlso(t =>
-                t.Cliente != null && t.Cliente.ClienteNombre.ToLower().Contains(valorFiltro.ToLower()));
-        }
+            filtro = filtro.AndAlso(t => t.Cliente != null && t.Cliente.ClienteNombre.ToLower().Contains(valorFiltro.ToLower()));
         else if (filtroCampo == "TecnicoNombre")
-        {
-            filtro = filtro.AndAlso(t =>
-                t.Tecnico != null && t.Tecnico.TecnicoNombre.ToLower().Contains(valorFiltro.ToLower()));
-        }
+            filtro = filtro.AndAlso(t => t.Tecnico != null && t.Tecnico.TecnicoNombre.ToLower().Contains(valorFiltro.ToLower()));
         else if (filtroCampo == "Asunto")
-        {
-            filtro = filtro.AndAlso(t =>
-                t.Asunto.ToLower().Contains(valorFiltro.ToLower()));
-        }
+            filtro = filtro.AndAlso(t => t.Asunto.ToLower().Contains(valorFiltro.ToLower()));
         else if (filtroCampo == "Descripcion")
-        {
-            filtro = filtro.AndAlso(t => 
-            t.Descripcion.ToLower().Contains(valorFiltro.ToLower()));
-        }
+            filtro = filtro.AndAlso(t => t.Descripcion.ToLower().Contains(valorFiltro.ToLower()));
         else if (!string.IsNullOrEmpty(filtroCampo))
-        {
             filtro = filtro.AndAlso(t => t.Prioridad.ToLower() == filtroCampo.ToLower());
-        }
+
         if (fechaDesde.HasValue)
-        {
-            var desde = DateOnly.FromDateTime(fechaDesde.Value);
-            filtro = filtro.AndAlso(t => t.Fecha >= desde);
-        }
+            filtro = filtro.AndAlso(t => t.Fecha >= DateOnly.FromDateTime(fechaDesde.Value));
+
         if (fechaHasta.HasValue)
-        {
-            var hasta = DateOnly.FromDateTime(fechaHasta.Value);
-            filtro = filtro.AndAlso(t => t.Fecha <= hasta);
-        }
+            filtro = filtro.AndAlso(t => t.Fecha <= DateOnly.FromDateTime(fechaHasta.Value));
 
         await using var context = await DbFactory.CreateDbContextAsync();
-        return await context.Tickets
+
+        var totalRegistros = await context.Tickets.CountAsync(filtro);
+        var totalPaginas = (int)Math.Ceiling(totalRegistros / (double)tamanioPagina);
+
+        var tickets = await context.Tickets
             .Include(t => t.Cliente)
             .Include(t => t.Tecnico)
             .Where(filtro)
+            .OrderBy(t => t.TicketId)
+            .Skip((pagina - 1) * tamanioPagina)
+            .Take(tamanioPagina)
             .AsNoTracking()
             .ToListAsync();
+
+        return new PaginacionResultado<Tickets>
+        {
+            Items = tickets,
+            PaginaActual = pagina,
+            TotalPaginas = totalPaginas
+        };
     }
 }
