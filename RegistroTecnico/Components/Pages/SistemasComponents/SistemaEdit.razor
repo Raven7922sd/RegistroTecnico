@@ -42,9 +42,9 @@
 
 			<div class="card-footer text-center mt-2">
 				<div class="btn-group" role="group">
-					<a href="/Ticket/Index" class="btn btn-outline-secondary"><span class="bi bi-box-arrow-left"></span> Volver</a>
-					<button type="submit" class="btn btn-outline-success"><span class="bi bi-floppy"></span> Guardar</button>
 					<a type="button" class="btn btn-outline-danger" @onclick="() => MostrarModal = true"><span class="bi bi-trash"></span>Eliminar</a>
+					<button type="submit" class="btn btn-outline-success"><span class="bi bi-floppy"></span> Guardar</button>
+					<a href="/Sistema/Index" class="btn btn-outline-secondary"><span class="bi bi-box-arrow-left"></span> Volver</a>
 				</div>
 			</div>
 		</div>
@@ -57,17 +57,17 @@
 		<div class="modal-dialog">
 			<div class="modal-content shadow">
 				<div class="modal-header bg-primary text-white text-center">
-					<h5 class="modal-tile">Eliminar Ticket</h5>
+					<h5 class="modal-tile">Eliminar Sistema</h5>
 					<button type="button" class="btn-close" @onclick="CerrarModal" aria-label="Cerrar"></button>
 				</div>
 				<div class="modal-body text-danger">
-					<p>¿Est&aacute; seguro de eliminar este Ticket?</p>
+					<p>¿Est&aacute; seguro de eliminar este Sistema?</p>
 				</div>
 				<div class="card-header">
-					<h5 class="card-title text-center"><strong>Datos del Ticket</strong></h5>
+					<h5 class="card-title text-center"><strong>Datos del Sistema</strong></h5>
 				</div>
 				<div class="mb-3 ms-3">
-					<p><strong>Ticket Id: </strong>@sistemas.SistemaId</p>
+					<p><strong>Sistema Id: </strong>@sistemas.SistemaId</p>
 					<p><strong>Prioridad: </strong>@sistemas.Complejidad</p>
 					<p><strong>Descripci&oacute;n: </strong>@sistemas.Descripcion</p>
 				</div>

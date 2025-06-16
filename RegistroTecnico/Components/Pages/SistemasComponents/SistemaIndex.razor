@@ -12,17 +12,18 @@
 			<h4 class="card-title text-center">Consulta de Sistemas</h4>
 		</div>
 		<div class="card-body">
-			
+
 			<div class="d-flex justify-content-between">
-				<label class="form-label"><strong>Filtros de Búsqueda</strong></label>
+				<h5 class="form-label"><strong>Filtros de Búsqueda</strong></h5>
 				<a href="/Sistema/Create" class="btn btn-success bi bi-plus-square"> Crear</a>
 			</div>
 
-			<div class="row align-items-end mb-4 mt-3">
+			<div class="row align-items-end mb-4 mt-4">
 
 				<div class="col-md-3">
 					<label class="form-label"><strong>Filtrar Por:</strong></label>
 					<InputSelect class="form-select" @bind-Value="Filtro">
+						<option value="" selected disabled>Seleccione una opci&oacute;n</option>
 						<option value="SistemaId">Id</option>
 						<option value="Baja">Complejidad "Baja"</option>
 						<option value="Media">Complejidad "Media"</option>
@@ -37,19 +38,19 @@
 					</div>
 				</div>
 
-				<div class="col-md-5">
+				<div class="col-md-3">
 					<label class="form-label"><strong>Búsqueda</strong></label>
 					<div class="input-group">
-						<input class="form-control flex-grow-1" @bind-value="ValorFiltro" placeholder="Buscar" />
+						<input class="form-control flex-grow-1" @bind-value="ValorFiltro" @oninput="FiltroCambiado" placeholder="Buscar" />
 						<button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
-						<button type="button" class="btn btn-outline-secondary ms-2" @onclick="Restablecer">Restablecer</button>
 					</div>
-					
-					<div class="col-md-7">
+
+					<div class="col-md-15">
 						<label class="form-label mt-4"><strong>Hasta:</strong></label>
 						<div class="input-group">
 							<span class="input-group-text bi bi-calendar-date-fill"></span>
 							<input type="date" class="form-control" @bind-value="FechaHasta" />
+							
 						</div>
 					</div>
 				</div>
@@ -116,7 +117,7 @@
 	public string ValorFiltro { get; set; } = string.Empty;
 	public DateTime? FechaDesde { get; set; }
 	public DateTime? FechaHasta { get; set; }
-
+	private CancellationTokenSource? _cts;
 	private PaginacionResultado<Sistemas> ResultadoPaginado { get; set; }
 	private int PaginaActual { get; set; } = 1;
 	private const int TamañoPagina = 5;
@@ -132,15 +133,23 @@
 		await CargarPagina(PaginaActual);
 	}
 
-	private async Task Restablecer()
+	private async Task FiltroCambiado(ChangeEventArgs e)
 	{
-		Filtro = string.Empty;
-		ValorFiltro = string.Empty;
-		FechaDesde = null;
-		FechaHasta = null;
-		PaginaActual = 1;
+		ValorFiltro = e.Value?.ToString() ?? string.Empty;
 
-		await CargarPagina(PaginaActual);
+		_cts?.Cancel();
+		_cts = new CancellationTokenSource();
+
+		try
+		{
+			await Task.Delay(400, _cts.Token);
+
+			await Buscar();
+			StateHasChanged();
+		}
+		catch (TaskCanceledException)
+		{
+		}
 	}
 
 	private async Task CargarPagina(int pagina)
