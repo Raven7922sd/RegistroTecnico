@@ -69,7 +69,7 @@
 							<th>Sistema</th>
 							<th>Cantidad</th>
 							<th>Monto</th>
-							<th>Fecha</th>
+							<th>Fecha de Creaci&oacute;n</th>
 							<th>Editar</th>
 						</tr>
 					</thead>
@@ -82,7 +82,7 @@
 									<td>@ventas.VentaId</td>
 									<td>@ventas.Cliente?.ClienteNombre</td>
 									<td>@ventas.VentasDetalles?.FirstOrDefault()?.Sistema?.Descripcion</td>
-									<td class="text-center">@ventas.VentasDetalles?.FirstOrDefault()?.Sistema?.Existencia</td>
+									<td class="text-center">@ventas.VentasDetalles?.FirstOrDefault()?.Cantidad</td>
 									<td class="text-end">@(ventas.VentasDetalles?.FirstOrDefault()?.Monto.ToString("N2") ?? "0.00")</td>
 									<td>@ventas.Fecha.ToString("dd/MM/yyyy")</td>
 									<td>
