@@ -50,33 +50,41 @@
 					<table class="table table-light">
 						<thead class="table table-striped">
 							<tr class="text-center">
-								<th>Sistema</th>
+								<th>Id</th>
+								<th>Descripcion</th>
 								<th>Coste</th>
 								<th>Cantidad</th>
 								<th>Remover</th>
 							</tr>
 						</thead>
 						<tbody>
-							@foreach (var detalle in ventas.VentasDetalles)
+							@if (ventas.VentasDetalles != null && ventas.VentasDetalles.Any())
 							{
-								<tr class="text-center">
-									<td>@detalle.SistemaId</td>
-									<td>@detalle.ValorCobrado.ToString("N2")</td>
-									<td>Value="@ListaSistemas.Count"</td>
-									<td>
-										<button type="button" class="btn btn-outline-danger bi bi-trash"
-												@onclick="() => RemoverDetalle(detalle)"></button>
-									</td>
-								</tr>
+								@foreach (var detalle in ventas.VentasDetalles)
+								{
+									<tr class="text-center">
+										<td>@detalle.SistemaId</td>
+										<td>@ListaSistemas.FirstOrDefault(s => s.SistemaId == detalle.SistemaId)?.Descripcion</td>
+										<td>@detalle.ValorCobrado.ToString("N2")</td>
+										<td>@detalle.Cantidad</td>
+										<td>
+											<button type="button" class="btn btn-outline-danger bi bi-trash"
+													@onclick="() => RemoverDetalle(detalle)"></button>
+										</td>
+									</tr>
+								}
 							}
 						</tbody>
 					</table>
-
 					<hr />
 				</div>
 			</div>
 
 			<div class="card-footer text-center mt-2">
+				<tr class="text-start">
+					<td colspan="2"><strong>Total:</strong></td>
+					<td colspan="3"><strong>@MontoTotal.ToString("N2")</strong></td>
+				</tr>
 				<div class="btn-group" role="group">
 					<button type="reset" class="btn btn-outline-primary bi bi-arrow-clockwise" @onclick="Nuevo">Limpiar</button>
 					<button type="submit" class="btn btn-outline-success bi bi-floppy"> Guardar</button>
@@ -89,6 +97,7 @@
 
 @code {
 	public int Cantidad { get; set; }
+	private double MontoTotal => ventas.VentasDetalles.Sum(d => d.ValorCobrado);
 	private Ventas ventas{ get; set; } = new Ventas();
 	private VentasDetalles DetalleSeleccionado { get; set; } = new(); 
 	public List<Ventas> Listaventas { get; set; } = [];
@@ -108,33 +117,83 @@
 		ListaClientes = await clienteservice.Listar(c => c.ClienteId > 0);
 	}
 
-	private async Task HandleSistemaSelected((Sistemas sistemas, double valor) selection)
+	private async Task HandleSistemaSelected((Sistemas sistemas, int cantidad, double valor) selection)
 	{
+		var (sistema, cantidad, valor) = selection;
+
 		var detalle = new VentasDetalles
-			{
-				SistemaId = selection.sistemas.SistemaId,
-				ValorCobrado = selection.valor,
-				
-			};
+		{
+			SistemaId = sistema.SistemaId,
+			Cantidad = cantidad,
+			ValorCobrado = valor,
+			Monto = sistema.Coste,
+			VentaId = ventas.VentaId
+		};
 
 		ventas.VentasDetalles.Add(detalle);
-		ventas.VentasDetalles.FirstOrDefault().Monto = ventas.VentasDetalles.Sum(d => d.ValorCobrado);
+
+		if (ventas.VentasDetalles.Any())
+		{
+			ventas.VentasDetalles.First().Monto = ventas.VentasDetalles.Sum(d => d.ValorCobrado);
+		}
+
 		DetalleSeleccionado = new VentasDetalles();
+
 		await Task.CompletedTask;
 	}
 
 	public async Task GuardarVenta()
 	{
-		var guardo = await ventaService.Guardar(this.ventas);
-		if (guardo != null)
+		if (ventas.ClienteId == 0)
 		{
-			itoastservice.ShowSuccess("Venta Guardada Correctamente");
-			navigationmanager.NavigateTo("/Ventas/Index");
-			Nuevo();
+			itoastservice.ShowError("Debe seleccionar un cliente.");
+			return;
 		}
-		else
+
+		if (ventas.VentasDetalles == null || !ventas.VentasDetalles.Any())
 		{
-			itoastservice.ShowError("Error al guardar el Registro");
+			itoastservice.ShowError("Debe agregar un sistema a la venta.");
+			return;
+		}
+
+		if (ventas.VentasDetalles.Any(d => d.Cantidad <= 0))
+		{
+			itoastservice.ShowWarning("Todos los sistemas deben tener una cantidad válida mayor a 0.");
+			return;
+		}
+
+		try
+		{
+			foreach (var detalle in ventas.VentasDetalles)
+			{
+				var restado = await sistemaService.RestarExistenciaAsync(detalle.SistemaId, detalle.Cantidad);
+				if (!restado)
+				{
+					itoastservice.ShowWarning($"No se pudo restar la existencia del sistema con ID {detalle.SistemaId}. Verifique el stock disponible.");
+					return;
+				}
+			}
+
+			var guardo = await ventaService.Guardar(this.ventas);
+			if (guardo != null)
+			{
+				itoastservice.ShowSuccess("Venta Guardada Correctamente");
+				navigationmanager.NavigateTo("/Ventas/Index");
+				Nuevo();
+			}
+			else
+			{
+				itoastservice.ShowError("Error al guardar el Registro");
+			}
+		}
+		catch (Exception ex)
+		{
+			var mensaje = ex.Message;
+			if (ex.InnerException != null)
+				mensaje += "\nDetalle: " + ex.InnerException.Message;
+
+			itoastservice.ShowError($"Error crítico: {mensaje}");
+			Console.WriteLine($"❌ Error: {ex}");
 		}
 	}
 
