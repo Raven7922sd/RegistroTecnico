@@ -47,42 +47,73 @@
 								  Valor="DetalleSeleccionado.ValorCobrado"
 								  OnSistemaSelected="HandleSistemaSelected" />
 					<hr />
-					<table class="table table-light">
-						<thead class="table table-striped">
-							<tr class="text-center">
-								<th>Sistema</th>
-								<th>Coste</th>
-								<th>Remover</th>
-							</tr>
-						</thead>
-						<tbody>
-							@foreach (var detalle in ventas.VentasDetalles)
-							{
-								<tr>
-									<td>@detalle.SistemaId</td>
-									<td>@detalle.ValorCobrado.ToString("N2")</td>
-									<td>
-										<button type="button" class="btn btn-outline-danger bi bi-trash" @onclick="() => RemoverDetalle(detalle)"></button>
-									</td>
+					<div class="table-responsive">
+						<table class="table table-hover">
+							<thead class="table table-striped">
+								<tr class="text-center">
+									<th>Venta Id</th>
+									<th>Sistema</th>
+									<th>Coste</th>
+									<th>Cantidad</th>
+									<th>Remover</th>
 								</tr>
-							}
-						</tbody>
-					</table>
-					<hr />
+							</thead>
+							<tbody>
+								@if (ventas.VentasDetalles != null && ventas.VentasDetalles.Any())
+								{
+									foreach (var detalle in ventas.VentasDetalles)
+									{
+										<tr>
+											<td>@detalle.VentaId</td>
+											<td>@detalle.Sistema?.Descripcion</td>
+											<td class="text-end">@detalle.ValorCobrado.ToString("N2")</td>
+											<td>@detalle.Cantidad</td>
+											<td>
+												<button type="button" class="btn btn-outline-danger btn-sm bi bi-trash" @onclick="() => RemoverDetalle(detalle)"></button>
+											</td>
+										</tr>
+									}
+								}
+							</tbody>
+						</table>
+						<hr />
+					</div>
 				</div>
 			</div>
 
 			<div class="card-footer text-center">
 				<div class="btn-group">
+					<button type="button" class="btn btn-outline-danger bi bi-trash3" @onclick="EliminarVenta"> Eliminar</button>
+					<button type="submit" class="btn btn-outline-success bi bi-pencil-square"> Guardar</button>
 					<a class="btn btn-outline-secondary" href="/Ventas/Index">
 						<span class="bi bi-box-arrow-left"></span> Volver
 					</a>
-					<button type="submit" class="btn btn-outline-success bi bi-pencil-square"> Actualizar</button>
 				</div>
 			</div>
 		</div>
 	</div>
 </EditForm>
+@if (MostrarModalEliminar)
+{
+	<div class="modal fade show d-block bg-opacity-50" tabindex="-1" role="dialog" style="background-color: rgba(0,0,0,0.5);">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header bg-danger text-white">
+					<h5 class="modal-title">Confirmar Eliminación</h5>
+					<button type="button" class="btn-close" @onclick="() => MostrarModalEliminar = false"></button>
+				</div>
+				<div class="modal-body">
+					<p>¿Está seguro de que desea eliminar esta venta (#@ventas.VentaId) de forma permanente?</p>
+					<p class="text-danger">Esta acción no se puede deshacer.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" @onclick="() => MostrarModalEliminar = false">Cancelar</button>
+					<button type="button" class="btn btn-danger" @onclick="EliminarVentaConfirmado">Eliminar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+}
 
 @code {
 	[Parameter] public int VentaId { get; set; }
@@ -90,6 +121,7 @@
 	private VentasDetalles DetalleSeleccionado = new();
 	public List<Sistemas> ListaSistemas = [];
 	public List<Clientes> ListaClientes = [];
+	private bool MostrarModalEliminar = false;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -98,32 +130,134 @@
 		ListaClientes = await clienteservice.Listar(c => c.ClienteId > 0);
 	}
 
-	private async Task HandleSistemaSelected((Sistemas sistema, double valor) selection)
+	private async Task HandleSistemaSelected((Sistemas sistema, int cantidad, double valor) selection)
 	{
+		var (sistema, cantidad, valor) = selection;
+
 		var detalle = new VentasDetalles
-			{
-				SistemaId = selection.sistema.SistemaId,
-				ValorCobrado = selection.valor
-			};
+		{
+			SistemaId = sistema.SistemaId,
+			Sistema = sistema,
+			Cantidad = cantidad,
+			ValorCobrado = valor,
+			Monto = sistema.Coste
+		};
 
 		ventas.VentasDetalles.Add(detalle);
-		detalle.Monto = ventas.VentasDetalles.Sum(d => d.ValorCobrado);
+
+		if (ventas.VentasDetalles.Any())
+		{
+			ventas.VentasDetalles.First().Monto = ventas.VentasDetalles.Sum(d => d.ValorCobrado);
+		}
+
 		DetalleSeleccionado = new VentasDetalles();
+
 		await Task.CompletedTask;
+		StateHasChanged();
 	}
 
 	private async Task ActualizarVenta()
 	{
-		bool actualizado = await ventaService.Guardar(ventas);
-		if (actualizado)
+		try
 		{
-			itoastservice.ShowSuccess("Venta actualizada correctamente");
+			var ventaAnterior = await ventaService.BuscarVentas(ventas.VentaId);
+			if (ventaAnterior == null)
+			{
+				itoastservice.ShowError("Venta no encontrada.");
+				return;
+			}
+
+			foreach (var detalleNuevo in ventas.VentasDetalles)
+			{
+				var detalleAntiguo = ventaAnterior.VentasDetalles
+					.FirstOrDefault(d => d.SistemaId == detalleNuevo.SistemaId);
+
+				int diferencia = detalleNuevo.Cantidad - (detalleAntiguo?.Cantidad ?? 0);
+
+				if (diferencia > 0)
+				{
+					var restado = await sistemaService.RestarExistenciaAsync(detalleNuevo.SistemaId, diferencia);
+					if (!restado)
+					{
+						itoastservice.ShowWarning($"No se pudo restar stock del sistema con ID {detalleNuevo.SistemaId}.");
+						return;
+					}
+				}
+				else if (diferencia < 0)
+				{
+					await sistemaService.RestaurarExistenciaAsync(detalleNuevo.SistemaId, -diferencia);
+				}
+			}
+
+			foreach (var detalleAntiguo in ventaAnterior.VentasDetalles)
+			{
+				if (!ventas.VentasDetalles.Any(d => d.SistemaId == detalleAntiguo.SistemaId))
+				{
+					await sistemaService.RestaurarExistenciaAsync(detalleAntiguo.SistemaId, detalleAntiguo.Cantidad);
+				}
+			}
+
+			ventaAnterior.VentasDetalles.Clear();
+			foreach (var nuevoDetalle in ventas.VentasDetalles)
+			{
+				ventaAnterior.VentasDetalles.Add(new VentasDetalles
+				{
+					SistemaId = nuevoDetalle.SistemaId,
+					Cantidad = nuevoDetalle.Cantidad,
+					ValorCobrado = nuevoDetalle.ValorCobrado,
+					Monto = nuevoDetalle.Monto
+				});
+			}
+
+			ventaAnterior.ClienteId = ventas.ClienteId;
+			ventaAnterior.Fecha = ventas.Fecha;
+
+			bool actualizado = await ventaService.Guardar(ventaAnterior);
+			if (actualizado)
+			{
+				itoastservice.ShowSuccess("Venta actualizada correctamente.");
+				navigationmanager.NavigateTo("/Ventas/Index");
+			}
+			else
+			{
+				itoastservice.ShowError("Error al actualizar la venta.");
+			}
+		}
+		catch (Exception ex)
+		{
+			var mensaje = ex.Message + (ex.InnerException != null ? "\n" + ex.InnerException.Message : "");
+			itoastservice.ShowError($"Error crítico: {mensaje}");
+			Console.WriteLine($"❌ Error: {ex}");
+		}
+	}
+
+	private async Task EliminarVentaConfirmado()
+	{
+		MostrarModalEliminar = false;
+
+		var ventaCompleta = await ventaService.BuscarVentas(ventas.VentaId);
+		if (ventaCompleta?.VentasDetalles != null)
+		{
+			foreach (var detalle in ventaCompleta.VentasDetalles)
+			{
+				await sistemaService.RestaurarExistenciaAsync(detalle.SistemaId, detalle.Cantidad);
+			}
+		}
+
+		bool eliminado = await ventaService.EliminarVentas(ventas.VentaId);
+		if (eliminado)
+		{
+			itoastservice.ShowSuccess("Venta eliminada correctamente");
 			navigationmanager.NavigateTo("/Ventas/Index");
 		}
 		else
 		{
-			itoastservice.ShowError("Error al actualizar la venta");
+			itoastservice.ShowError("No se pudo eliminar la venta");
 		}
+	}
+	private void EliminarVenta()
+	{
+		MostrarModalEliminar = true;
 	}
 
 	private void RemoverDetalle(VentasDetalles detalle)
