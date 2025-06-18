@@ -46,7 +46,7 @@
     [Parameter] public List<Sistemas> sistemas { get; set; } = new();
     [Parameter] public int SistemaId { get; set; }
     [Parameter] public double Valor { get; set; }
-    [Parameter] public EventCallback<(Sistemas sistemas, double Valor)> OnSistemaSelected { get; set; }
+    [Parameter] public EventCallback<(Sistemas sistema, int cantidad, double valorTotal)> OnSistemaSelected { get; set; }
     [Parameter] public EventCallback<int> SistemaIdChanged { get; set; }
     [Parameter] public EventCallback<double> ValorChanged { get; set; }
 
@@ -107,7 +107,7 @@
 
         if (SistemaId == 0)
         {
-            ErrorMessage = "Debe seleccionar un sistema";
+            ErrorMessage = "Debe seleccionar un sistema válido";
             return;
         }
 
@@ -117,6 +117,6 @@
             ErrorMessage = "Sistema no encontrado";
             return;
         }
-        await OnSistemaSelected.InvokeAsync((sistemaSeleccionado, Valor));
+        await OnSistemaSelected.InvokeAsync((sistemaSeleccionado, CantidadSeleccionada, Valor));
     }
 }
