@@ -11,6 +11,7 @@ public class Contexto:DbContext
     public virtual DbSet<Tickets> Tickets  { get; set; }
     public virtual DbSet<Sistemas>Sistemas { get; set; }
     public virtual DbSet<Ventas>Ventas { get; set; }
+    public DbSet<VentasDetalles> VentasDetalles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
