@@ -108,4 +108,31 @@ public class SistemaService(IDbContextFactory<Contexto> DbFactory)
             TotalPaginas = totalPaginas
         };
     }
+
+    public async Task<bool> RestarExistenciaAsync(int sistemaId, int cantidadVendida)
+    {
+        await using var context = await DbFactory.CreateDbContextAsync();
+
+        var sistema = await context.Sistemas.FirstOrDefaultAsync(s => s.SistemaId == sistemaId);
+
+        if (sistema == null)
+            return false;
+
+        if (sistema.Existencia < cantidadVendida)
+            return false;
+
+        sistema.Existencia -= cantidadVendida;
+
+        context.Sistemas.Update(sistema);
+        return await context.SaveChangesAsync() > 0;
+    }
+    public async Task<bool> RestaurarExistenciaAsync(int sistemaId, int cantidad)
+    {
+        await using var ctx = await DbFactory.CreateDbContextAsync();
+        var sistema = await ctx.Sistemas.FindAsync(sistemaId);
+        if (sistema == null) return false;
+        sistema.Existencia += cantidad;
+        await ctx.SaveChangesAsync();
+        return true;
+    }
 }
