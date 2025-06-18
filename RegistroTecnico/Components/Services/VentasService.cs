@@ -10,7 +10,6 @@ namespace RegistroTecnico.Components.Services;
 
 public class VentasService(IDbContextFactory<Contexto>DbFactory)
 {
-
     public async Task<bool> Guardar(Ventas ventas)
     {
         if (!await ExisteId(ventas.VentaId))
@@ -42,19 +41,44 @@ public class VentasService(IDbContextFactory<Contexto>DbFactory)
         return await context.SaveChangesAsync() > 0;
     }
 
+
     public async Task<Ventas?> BuscarVentas(int Ventaid)
     {
         await using var context = await DbFactory.CreateDbContextAsync();
+
         return await context.Ventas
-            .Include(c => c.Cliente)
-            .Include(c => c.VentasDetalles).FirstOrDefaultAsync(n => n.VentaId == Ventaid);
+            .Include(v => v.Cliente)
+            .Include(v => v.VentasDetalles) 
+                .ThenInclude(d => d.Sistema)
+            .FirstOrDefaultAsync(v => v.VentaId == Ventaid);
     }
 
     public async Task<bool> EliminarVentas(int VentaId)
     {
         await using var context = await DbFactory.CreateDbContextAsync();
-        return await context.Ventas.AsNoTracking().Where(l => l.VentaId == VentaId).ExecuteDeleteAsync() > 0;
+
+        var venta = await context.Ventas
+            .Include(v => v.VentasDetalles)
+            .FirstOrDefaultAsync(v => v.VentaId == VentaId);
+
+        if (venta == null)
+            return false;
+
+        foreach (var detalle in venta.VentasDetalles)
+        {
+            var sistema = await context.Sistemas.FindAsync(detalle.SistemaId);
+            if (sistema != null)
+            {
+                sistema.Existencia += detalle.Cantidad;
+            }
+        }
+        context.VentasDetalles.RemoveRange(venta.VentasDetalles);
+
+        context.Ventas.Remove(venta);
+
+        return await context.SaveChangesAsync() > 0;
     }
+
 
     public async Task<List<Ventas>> ListarVentas(Expression<Func<Ventas, bool>> criterio)
     {
