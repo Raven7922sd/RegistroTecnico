@@ -1,0 +1,146 @@
+﻿@page "/Ventas/Create"
+@inject SistemaService sistemaService
+@inject ClienteService clienteservice
+@inject VentasService ventaService
+@rendermode InteractiveServer
+@inject IToastService itoastservice
+@inject NavigationManager navigationmanager
+
+<PageTitle>Crear Venta</PageTitle>
+
+<EditForm Model="ventas" OnValidSubmit="GuardarVenta">
+	<DataAnnotationsValidator />
+
+	<div class="container">
+		<div class="card shadow-lg">
+			<div class="card-header">
+				<h4 class="card-title position-relative text-center">Registro de Ventas</h4>
+			</div>
+
+			<div class="card-body">
+				<div class="mb-3">
+					<label class="form-label"><strong>Venta Id</strong></label>
+					<InputNumber class="form-control" @bind-Value="ventas.VentaId" readonly />
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Cliente</strong></label>
+					<InputSelect class="form-control form-select" @bind-Value="ventas.ClienteId">
+						<option value=0 selected disabled>Seleccione al Cliente correspondiente</option>
+						@foreach (var cliente in ListaClientes)
+						{
+							<option value="@cliente.ClienteId">@cliente.ClienteId- @cliente.ClienteNombre (@cliente.DireccionCliente, Rnc: @cliente.Rnc) </option>
+						}
+					</InputSelect>
+					<ValidationMessage For="(() => ventas.ClienteId)" />
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Fecha</strong></label>
+					<InputDate class="form-control" @bind-Value="ventas.Fecha"></InputDate>
+				</div>
+
+				<div class="border border-success p-3 mt-3">
+					<h5 class="text-center">Detalles de la Venta</h5>
+					<VentasPicker sistemas="ListaSistemas"
+					SistemaId="DetalleSeleccionado.SistemaId"
+					Valor="DetalleSeleccionado.ValorCobrado"
+					OnSistemaSelected="HandleSistemaSelected" />
+					<hr />
+					<table class="table table-light">
+						<thead class="table table-striped">
+							<tr class="text-center">
+								<th>Sistema</th>
+								<th>Coste</th>
+								<th>Cantidad</th>
+								<th>Remover</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var detalle in ventas.VentasDetalles)
+							{
+								<tr class="text-center">
+									<td>@detalle.SistemaId</td>
+									<td>@detalle.ValorCobrado.ToString("N2")</td>
+									<td>Value="@ListaSistemas.Count"</td>
+									<td>
+										<button type="button" class="btn btn-outline-danger bi bi-trash"
+												@onclick="() => RemoverDetalle(detalle)"></button>
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+
+					<hr />
+				</div>
+			</div>
+
+			<div class="card-footer text-center mt-2">
+				<div class="btn-group" role="group">
+					<button type="reset" class="btn btn-outline-primary bi bi-arrow-clockwise" @onclick="Nuevo">Limpiar</button>
+					<button type="submit" class="btn btn-outline-success bi bi-floppy"> Guardar</button>
+					<a href="/Ventas/Index" class="btn btn-outline-secondary"><span class="bi bi-box-arrow-left"></span> Volver</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</EditForm>
+
+@code {
+	public int Cantidad { get; set; }
+	private Ventas ventas{ get; set; } = new Ventas();
+	private VentasDetalles DetalleSeleccionado { get; set; } = new(); 
+	public List<Ventas> Listaventas { get; set; } = [];
+	public List<Sistemas> ListaSistemas{ get; set; } = [];
+	public List<Clientes> ListaClientes { get; set; } = [];
+	public double ValorAplicar { get; set; }
+
+	public void Nuevo()
+	{
+		this.ventas = new Ventas();
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		ventas = new Ventas();
+		ListaSistemas = await sistemaService.ListarSistemas(t => t.SistemaId > 0);
+		ListaClientes = await clienteservice.Listar(c => c.ClienteId > 0);
+	}
+
+	private async Task HandleSistemaSelected((Sistemas sistemas, double valor) selection)
+	{
+		var detalle = new VentasDetalles
+			{
+				SistemaId = selection.sistemas.SistemaId,
+				ValorCobrado = selection.valor,
+				
+			};
+
+		ventas.VentasDetalles.Add(detalle);
+		ventas.VentasDetalles.FirstOrDefault().Monto = ventas.VentasDetalles.Sum(d => d.ValorCobrado);
+		DetalleSeleccionado = new VentasDetalles();
+		await Task.CompletedTask;
+	}
+
+	public async Task GuardarVenta()
+	{
+		var guardo = await ventaService.Guardar(this.ventas);
+		if (guardo != null)
+		{
+			itoastservice.ShowSuccess("Venta Guardada Correctamente");
+			navigationmanager.NavigateTo("/Ventas/Index");
+			Nuevo();
+		}
+		else
+		{
+			itoastservice.ShowError("Error al guardar el Registro");
+		}
+	}
+
+	public void RemoverDetalle(VentasDetalles detalle)
+	{
+		ventas.VentasDetalles.Remove(detalle);
+		DetalleSeleccionado = detalle;
+	}
+}
