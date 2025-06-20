@@ -38,6 +38,18 @@
 					<textarea class="form-control" @bind="sistemas.Descripcion" rows="5" placeholder="Descripción..."></textarea>
 					<ValidationMessage For="(() => sistemas.Descripcion)" />
 				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Existencia</strong></label>
+					<InputNumber class="form-control" @bind-Value="sistemas.Existencia"></InputNumber>
+					<ValidationMessage For="()=>sistemas.Existencia"></ValidationMessage>
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Coste</strong></label>
+					<InputNumber class="form-control" @bind-Value="sistemas.Coste"></InputNumber>
+					<ValidationMessage For="()=>sistemas.Coste"></ValidationMessage>
+				</div>
 			</div>
 
 			<div class="card-footer text-center mt-2">
@@ -56,7 +68,7 @@
 	<div class="modal fade show d-block" tabindex="-1" role="dialog">
 		<div class="modal-dialog">
 			<div class="modal-content shadow">
-				<div class="modal-header bg-primary text-white text-center">
+				<div class="modal-header bg-danger text-white text-center">
 					<h5 class="modal-tile">Eliminar Sistema</h5>
 					<button type="button" class="btn-close" @onclick="CerrarModal" aria-label="Cerrar"></button>
 				</div>
@@ -70,11 +82,13 @@
 					<p><strong>Sistema Id: </strong>@sistemas.SistemaId</p>
 					<p><strong>Prioridad: </strong>@sistemas.Complejidad</p>
 					<p><strong>Descripci&oacute;n: </strong>@sistemas.Descripcion</p>
+					<p><strong>Existencia: </strong>@sistemas.Existencia</p>
+					<p><strong>Costo: </strong>@sistemas.Coste</p>
 				</div>
 				<div class="modal-footer d-flex justify-content-center">
 					<div class="btn-group" role="group">
+							<button class="btn btn-outline-danger bi bi-trash" @onclick="EliminarSistema"> Eliminar</button>
 						<button type="button" class="btn btn-outline-secondary bi bi-box-arrow-left" @onclick="CerrarModal"> Volver</button>
-						<button class="btn btn-outline-danger bi bi-trash" @onclick="EliminarSistema"> Eliminar</button>
 					</div>
 				</div>
 			</div>
