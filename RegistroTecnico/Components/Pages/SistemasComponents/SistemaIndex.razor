@@ -29,6 +29,7 @@
 						<option value="Media">Complejidad "Media"</option>
 						<option value="Alta">Complejidad "Alta"</option>
 						<option value="Descripcion">Descripción</option>
+						<option value="Coste">Coste</option>
 					</InputSelect>
 
 					<label class="form-label mt-4"><strong>Desde:</strong></label>
@@ -63,6 +64,8 @@
 							<th>Id</th>
 							<th>Complejidad</th>
 							<th>Descripci&oacute;n</th>
+							<th>Existencia</th>
+							<th>Coste</th>
 							<th>Fecha</th>
 							<th>Editar</th>
 						</tr>
@@ -76,6 +79,8 @@
 									<td>@sistemas.SistemaId</td>
 									<td>@sistemas.Complejidad</td>
 									<td>@sistemas.Descripcion</td>
+									<td>@sistemas.Existencia</td>
+									<td>@sistemas.Coste.ToString("N2")</td>
 									<td>@sistemas.Fecha.ToString("dd/MM/yyyy")</td>
 									<td>
 										<a href="Sistema/Edit/@sistemas.SistemaId" class="btn btn-outline-primary bi bi-pencil-square"></a>
@@ -85,7 +90,7 @@
 						}
 					</tbody>
 				</table>
-			</div>
+			</div >
 			@if (ResultadoPaginado != null && ResultadoPaginado.TotalPaginas > 1)
 			{
 				<nav aria-label="Paginación">
