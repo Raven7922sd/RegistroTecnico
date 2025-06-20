@@ -71,10 +71,16 @@ namespace RegistroTecnico.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<double>("Coste")
+                        .HasColumnType("float");
+
                     b.Property<string>("Descripcion")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Existencia")
+                        .HasColumnType("int");
 
                     b.Property<DateOnly>("Fecha")
                         .HasColumnType("date");
@@ -147,6 +153,56 @@ namespace RegistroTecnico.Migrations
                     b.ToTable("Tickets");
                 });
 
+            modelBuilder.Entity("RegistroTecnico.Components.Models.Ventas", b =>
+                {
+                    b.Property<int>("VentaId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VentaId"));
+
+                    b.Property<int>("ClienteId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.HasKey("VentaId");
+
+                    b.HasIndex("ClienteId");
+
+                    b.ToTable("Ventas");
+                });
+
+            modelBuilder.Entity("RegistroTecnico.Components.Models.VentasDetalles", b =>
+                {
+                    b.Property<int>("DetalleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DetalleId"));
+
+                    b.Property<double>("Monto")
+                        .HasColumnType("float");
+
+                    b.Property<int>("SistemaId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("ValorCobrado")
+                        .HasColumnType("float");
+
+                    b.Property<int>("VentaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("DetalleId");
+
+                    b.HasIndex("SistemaId");
+
+                    b.HasIndex("VentaId");
+
+                    b.ToTable("VentasDetalles");
+                });
+
             modelBuilder.Entity("RegistroTecnico.Components.Models.Clientes", b =>
                 {
                     b.HasOne("RegistroTecnico.Components.Models.Tecnicos", "Tecnico")
@@ -175,6 +231,41 @@ namespace RegistroTecnico.Migrations
                     b.Navigation("Cliente");
 
                     b.Navigation("Tecnico");
+                });
+
+            modelBuilder.Entity("RegistroTecnico.Components.Models.Ventas", b =>
+                {
+                    b.HasOne("RegistroTecnico.Components.Models.Clientes", "Cliente")
+                        .WithMany()
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cliente");
+                });
+
+            modelBuilder.Entity("RegistroTecnico.Components.Models.VentasDetalles", b =>
+                {
+                    b.HasOne("RegistroTecnico.Components.Models.Sistemas", "Sistema")
+                        .WithMany()
+                        .HasForeignKey("SistemaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("RegistroTecnico.Components.Models.Ventas", "Venta")
+                        .WithMany("VentasDetalles")
+                        .HasForeignKey("VentaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Sistema");
+
+                    b.Navigation("Venta");
+                });
+
+            modelBuilder.Entity("RegistroTecnico.Components.Models.Ventas", b =>
+                {
+                    b.Navigation("VentasDetalles");
                 });
 #pragma warning restore 612, 618
         }
