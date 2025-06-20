@@ -79,6 +79,8 @@ public class SistemaService(IDbContextFactory<Contexto> DbFactory)
         {
             filtro = filtro.AndAlso(t => t.Complejidad.ToLower() == filtroCampo.ToLower());
         }
+        else if (filtroCampo == "Coste" && double.TryParse(valorFiltro, out var monto))
+            filtro = filtro.AndAlso(m => m.Coste == monto);
 
         if (fechaDesde.HasValue)
             filtro = filtro.AndAlso(s => s.Fecha >= DateOnly.FromDateTime(fechaDesde.Value));
