@@ -39,10 +39,22 @@ public class SistemaService(IDbContextFactory<Contexto> DbFactory)
         return await context.SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> Eliminar(int SistemaId)
+    public async Task<(bool Exito, string? Mensaje)> Eliminar(int sistemaId)
     {
         await using var context = await DbFactory.CreateDbContextAsync();
-        return await context.Sistemas.AsNoTracking().Where(s => s.SistemaId == SistemaId).ExecuteDeleteAsync() > 0;
+
+        bool estaEnUso = await context.VentasDetalles.AnyAsync(d => d.SistemaId == sistemaId);
+        if (estaEnUso)
+            return (false, "No se puede eliminar el sistema porque está en uso en una venta.");
+
+        var sistema = await context.Sistemas.FindAsync(sistemaId);
+        if (sistema == null)
+            return (false, "Sistema no encontrado.");
+
+        context.Sistemas.Remove(sistema);
+        await context.SaveChangesAsync();
+
+        return (true, null);
     }
 
     public async Task<List<Sistemas>> ListarSistemas(Expression<Func<Sistemas, bool>> criterio)
