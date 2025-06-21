@@ -225,8 +225,7 @@
 		}
 		catch (Exception ex)
 		{
-			var mensaje = ex.Message + (ex.InnerException != null ? "\n" + ex.InnerException.Message : "");
-			itoastservice.ShowError($"Error crítico: {mensaje}");
+			itoastservice.ShowError($"No se puede guardar un sistema con cantidad 0");
 			Console.WriteLine($"❌ Error: {ex}");
 		}
 	}
@@ -234,15 +233,6 @@
 	private async Task EliminarVentaConfirmado()
 	{
 		MostrarModalEliminar = false;
-
-		var ventaCompleta = await ventaService.BuscarVentas(ventas.VentaId);
-		if (ventaCompleta?.VentasDetalles != null)
-		{
-			foreach (var detalle in ventaCompleta.VentasDetalles)
-			{
-				await sistemaService.RestaurarExistenciaAsync(detalle.SistemaId, detalle.Cantidad);
-			}
-		}
 
 		bool eliminado = await ventaService.EliminarVentas(ventas.VentaId);
 		if (eliminado)
