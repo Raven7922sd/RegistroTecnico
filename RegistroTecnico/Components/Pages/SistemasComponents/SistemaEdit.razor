@@ -124,21 +124,22 @@
 			itoastservice.ShowError("Error al modificar el Sistema");
 		}
 	}
-
 	private async Task EliminarSistema()
 	{
 		if (sistemas != null)
 		{
-			var Eliminado = await sistemaService.Eliminar(sistemas.SistemaId);
-			if (Eliminado)
+			var resultado = await sistemaService.Eliminar(sistemas.SistemaId);
+
+			if (resultado.Exito)
 			{
 				itoastservice.ShowSuccess("Sistema eliminado correctamente");
 				navigationManager.NavigateTo("/Sistema/Index");
 			}
 			else
 			{
-				itoastservice.ShowError("Error al eliminar el sistema");
+				itoastservice.ShowError(resultado.Mensaje ?? "Error al eliminar el sistema");
 			}
+
 			MostrarModal = false;
 		}
 	}
