@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RegistroTecnico.Components.DAL;
 
@@ -11,9 +12,11 @@ using RegistroTecnico.Components.DAL;
 namespace RegistroTecnico.Migrations
 {
     [DbContext(typeof(Contexto))]
-    partial class ContextoModelSnapshot : ModelSnapshot
+    [Migration("20250620012044_tarea5")]
+    partial class tarea5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -167,9 +170,17 @@ namespace RegistroTecnico.Migrations
                     b.Property<DateOnly>("Fecha")
                         .HasColumnType("date");
 
+                    b.Property<double>("Monto")
+                        .HasColumnType("float");
+
+                    b.Property<int>("SistemaId")
+                        .HasColumnType("int");
+
                     b.HasKey("VentaId");
 
                     b.HasIndex("ClienteId");
+
+                    b.HasIndex("SistemaId");
 
                     b.ToTable("Ventas");
                 });
@@ -185,9 +196,6 @@ namespace RegistroTecnico.Migrations
                     b.Property<int>("Cantidad")
                         .HasColumnType("int");
 
-                    b.Property<double>("Monto")
-                        .HasColumnType("float");
-
                     b.Property<int>("SistemaId")
                         .HasColumnType("int");
 
@@ -197,11 +205,14 @@ namespace RegistroTecnico.Migrations
                     b.Property<int>("VentaId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ventasVentaId")
+                        .HasColumnType("int");
+
                     b.HasKey("DetalleId");
 
-                    b.HasIndex("SistemaId");
-
                     b.HasIndex("VentaId");
+
+                    b.HasIndex("ventasVentaId");
 
                     b.ToTable("VentasDetalles");
                 });
@@ -244,26 +255,34 @@ namespace RegistroTecnico.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Cliente");
-                });
-
-            modelBuilder.Entity("RegistroTecnico.Components.Models.VentasDetalles", b =>
-                {
                     b.HasOne("RegistroTecnico.Components.Models.Sistemas", "Sistema")
                         .WithMany()
                         .HasForeignKey("SistemaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Cliente");
+
+                    b.Navigation("Sistema");
+                });
+
+            modelBuilder.Entity("RegistroTecnico.Components.Models.VentasDetalles", b =>
+                {
                     b.HasOne("RegistroTecnico.Components.Models.Ventas", "Venta")
                         .WithMany("VentasDetalles")
                         .HasForeignKey("VentaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Sistema");
+                    b.HasOne("RegistroTecnico.Components.Models.Ventas", "ventas")
+                        .WithMany()
+                        .HasForeignKey("ventasVentaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Venta");
+
+                    b.Navigation("ventas");
                 });
 
             modelBuilder.Entity("RegistroTecnico.Components.Models.Ventas", b =>

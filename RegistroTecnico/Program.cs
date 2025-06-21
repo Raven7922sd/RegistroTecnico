@@ -18,6 +18,7 @@ builder.Services.AddScoped<TecnicoService>();
 builder.Services.AddScoped<ClienteService>();
 builder.Services.AddScoped<TicketService>();
 builder.Services.AddScoped<SistemaService>();
+builder.Services.AddScoped<VentasService>();
 
 var app = builder.Build();
 

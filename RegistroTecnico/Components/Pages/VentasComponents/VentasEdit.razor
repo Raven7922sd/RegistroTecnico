@@ -1,0 +1,258 @@
+﻿@page "/Ventas/Edit/{VentaId:int}"
+@inject SistemaService sistemaService
+@inject ClienteService clienteservice
+@inject VentasService ventaService
+@inject NavigationManager navigationmanager
+@inject IToastService itoastservice
+@rendermode InteractiveServer
+
+<PageTitle>Editar Venta</PageTitle>
+
+<EditForm Model="ventas" OnValidSubmit="ActualizarVenta">
+	<DataAnnotationsValidator />
+
+	<div class="container">
+		<div class="card shadow-lg">
+			<div class="card-header">
+				<h4 class="card-title text-center">Editar Venta</h4>
+			</div>
+
+			<div class="card-body">
+				<div class="mb-3">
+					<label class="form-label"><strong>Venta Id</strong></label>
+					<InputNumber class="form-control" @bind-Value="ventas.VentaId" readonly />
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Cliente</strong></label>
+					<InputSelect class="form-select" @bind-Value="ventas.ClienteId">
+						<option value=0 disabled>Seleccione un cliente</option>
+						@foreach (var cliente in ListaClientes)
+						{
+							<option value="@cliente.ClienteId">@cliente.ClienteId - @cliente.ClienteNombre</option>
+						}
+					</InputSelect>
+					<ValidationMessage For="(() => ventas.ClienteId)" />
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Fecha</strong></label>
+					<InputDate class="form-control" @bind-Value="ventas.Fecha" />
+				</div>
+
+				<div class="border border-success p-3 mt-3">
+					<h5 class="text-center">Detalles de la Venta</h5>
+					<VentasPicker sistemas="ListaSistemas"
+								  SistemaId="DetalleSeleccionado.SistemaId"
+								  Valor="DetalleSeleccionado.ValorCobrado"
+								  OnSistemaSelected="HandleSistemaSelected" />
+					<hr />
+					<div class="table-responsive">
+						<table class="table table-hover">
+							<thead class="table table-striped">
+								<tr class="text-center">
+									<th>Venta Id</th>
+									<th>Sistema</th>
+									<th>Coste</th>
+									<th>Cantidad</th>
+									<th>Remover</th>
+								</tr>
+							</thead>
+							<tbody>
+								@if (ventas.VentasDetalles != null && ventas.VentasDetalles.Any())
+								{
+									foreach (var detalle in ventas.VentasDetalles)
+									{
+										<tr>
+											<td>@detalle.VentaId</td>
+											<td>@detalle.Sistema?.Descripcion</td>
+											<td class="text-end">@detalle.ValorCobrado.ToString("N2")</td>
+											<td>@detalle.Cantidad</td>
+											<td>
+												<button type="button" class="btn btn-outline-danger btn-sm bi bi-trash" @onclick="() => RemoverDetalle(detalle)"></button>
+											</td>
+										</tr>
+									}
+								}
+							</tbody>
+						</table>
+						<hr />
+					</div>
+				</div>
+			</div>
+
+			<div class="card-footer text-center">
+				<div class="btn-group">
+					<button type="button" class="btn btn-outline-danger bi bi-trash3" @onclick="EliminarVenta"> Eliminar</button>
+					<button type="submit" class="btn btn-outline-success bi bi-pencil-square"> Guardar</button>
+					<a class="btn btn-outline-secondary" href="/Ventas/Index">
+						<span class="bi bi-box-arrow-left"></span> Volver
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</EditForm>
+@if (MostrarModalEliminar)
+{
+	<div class="modal fade show d-block bg-opacity-50" tabindex="-1" role="dialog" style="background-color: rgba(0,0,0,0.5);">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header bg-danger text-white">
+					<h5 class="modal-title">Confirmar Eliminación</h5>
+					<button type="button" class="btn-close" @onclick="() => MostrarModalEliminar = false"></button>
+				</div>
+				<div class="modal-body">
+					<p>¿Está seguro de que desea eliminar esta venta (#@ventas.VentaId) de forma permanente?</p>
+					<p class="text-danger">Esta acción no se puede deshacer.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" @onclick="() => MostrarModalEliminar = false">Cancelar</button>
+					<button type="button" class="btn btn-danger" @onclick="EliminarVentaConfirmado">Eliminar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+@code {
+	[Parameter] public int VentaId { get; set; }
+	private Ventas ventas = new();
+	private VentasDetalles DetalleSeleccionado = new();
+	public List<Sistemas> ListaSistemas = [];
+	public List<Clientes> ListaClientes = [];
+	private bool MostrarModalEliminar = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		ventas = await ventaService.BuscarVentas(VentaId) ?? new Ventas();
+		ListaSistemas = await sistemaService.ListarSistemas(s => s.SistemaId > 0);
+		ListaClientes = await clienteservice.Listar(c => c.ClienteId > 0);
+	}
+
+	private async Task HandleSistemaSelected((Sistemas sistema, int cantidad, double valor) selection)
+	{
+		var (sistema, cantidad, valor) = selection;
+
+		var detalle = new VentasDetalles
+		{
+			SistemaId = sistema.SistemaId,
+			Sistema = sistema,
+			Cantidad = cantidad,
+			ValorCobrado = valor,
+			Monto = sistema.Coste
+		};
+
+		ventas.VentasDetalles.Add(detalle);
+
+		if (ventas.VentasDetalles.Any())
+		{
+			ventas.VentasDetalles.First().Monto = ventas.VentasDetalles.Sum(d => d.ValorCobrado);
+		}
+
+		DetalleSeleccionado = new VentasDetalles();
+
+		await Task.CompletedTask;
+		StateHasChanged();
+	}
+
+	private async Task ActualizarVenta()
+	{
+		try
+		{
+			var ventaAnterior = await ventaService.BuscarVentas(ventas.VentaId);
+			if (ventaAnterior == null)
+			{
+				itoastservice.ShowError("Venta no encontrada.");
+				return;
+			}
+
+			foreach (var detalleNuevo in ventas.VentasDetalles)
+			{
+				var detalleAntiguo = ventaAnterior.VentasDetalles
+					.FirstOrDefault(d => d.SistemaId == detalleNuevo.SistemaId);
+
+				int diferencia = detalleNuevo.Cantidad - (detalleAntiguo?.Cantidad ?? 0);
+
+				if (diferencia > 0)
+				{
+					var restado = await sistemaService.RestarExistenciaAsync(detalleNuevo.SistemaId, diferencia);
+					if (!restado)
+					{
+						itoastservice.ShowWarning($"No se pudo restar stock del sistema con ID {detalleNuevo.SistemaId}.");
+						return;
+					}
+				}
+				else if (diferencia < 0)
+				{
+					await sistemaService.RestaurarExistenciaAsync(detalleNuevo.SistemaId, -diferencia);
+				}
+			}
+
+			foreach (var detalleAntiguo in ventaAnterior.VentasDetalles)
+			{
+				if (!ventas.VentasDetalles.Any(d => d.SistemaId == detalleAntiguo.SistemaId))
+				{
+					await sistemaService.RestaurarExistenciaAsync(detalleAntiguo.SistemaId, detalleAntiguo.Cantidad);
+				}
+			}
+
+			ventaAnterior.VentasDetalles.Clear();
+			foreach (var nuevoDetalle in ventas.VentasDetalles)
+			{
+				ventaAnterior.VentasDetalles.Add(new VentasDetalles
+				{
+					SistemaId = nuevoDetalle.SistemaId,
+					Cantidad = nuevoDetalle.Cantidad,
+					ValorCobrado = nuevoDetalle.ValorCobrado,
+					Monto = nuevoDetalle.Monto
+				});
+			}
+
+			ventaAnterior.ClienteId = ventas.ClienteId;
+			ventaAnterior.Fecha = ventas.Fecha;
+
+			bool actualizado = await ventaService.Guardar(ventaAnterior);
+			if (actualizado)
+			{
+				itoastservice.ShowSuccess("Venta actualizada correctamente.");
+				navigationmanager.NavigateTo("/Ventas/Index");
+			}
+			else
+			{
+				itoastservice.ShowError("Error al actualizar la venta.");
+			}
+		}
+		catch (Exception ex)
+		{
+			itoastservice.ShowError($"No se puede guardar un sistema con cantidad 0");
+			Console.WriteLine($"❌ Error: {ex}");
+		}
+	}
+
+	private async Task EliminarVentaConfirmado()
+	{
+		MostrarModalEliminar = false;
+
+		bool eliminado = await ventaService.EliminarVentas(ventas.VentaId);
+		if (eliminado)
+		{
+			itoastservice.ShowSuccess("Venta eliminada correctamente");
+			navigationmanager.NavigateTo("/Ventas/Index");
+		}
+		else
+		{
+			itoastservice.ShowError("No se pudo eliminar la venta");
+		}
+	}
+	private void EliminarVenta()
+	{
+		MostrarModalEliminar = true;
+	}
+
+	private void RemoverDetalle(VentasDetalles detalle)
+	{
+		ventas.VentasDetalles.Remove(detalle);
+		DetalleSeleccionado = new VentasDetalles();
+	}
+}

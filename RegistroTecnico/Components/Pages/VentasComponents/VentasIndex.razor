@@ -1,35 +1,38 @@
-﻿@page "/Sistema/Index"
+﻿@page "/Ventas/Index"
+@using System.Linq.Expressions
 @using RegistroTecnico.Components.Models.Paginacion
+@inject ClienteService clienteservice
 @inject SistemaService sistemaservice
-@inject IToastService itoastservice
+@inject VentasService ventaService
+@inject NavigationManager navigationmanager
 @rendermode InteractiveServer
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Ventas Index</PageTitle>
 
 <div class="container">
 	<div class="card shadow-lg">
-		<div class="card-header">
-			<h4 class="card-title text-center">Consulta de Sistemas</h4>
+		<div class="card-header position-relative text-center">
+			<h4 class="card-title">Consulta de Ventas</h4>
 		</div>
-		<div class="card-body">
 
-			<div class="d-flex justify-content-between">
-				<h5 class="form-label"><strong>Filtros de Búsqueda</strong></h5>
-				<a href="/Sistema/Create" class="btn btn-success bi bi-plus-square"> Crear</a>
+		<div class="card-body">
+			<div class="d-flex justify-content-between align-items-center mb-5">
+				<h5 class="card-title mb-0">Filtros de B&uacute;squeda</h5>
+				<a href="/Ventas/Create" class="btn btn-success">
+					<span class="bi bi-plus-square"></span> Crear
+				</a>
 			</div>
 
-			<div class="row align-items-end mb-4 mt-4">
+			<div class="row g-3 align-items-end mb-4">
 
 				<div class="col-md-3">
 					<label class="form-label"><strong>Filtrar Por:</strong></label>
 					<InputSelect class="form-select" @bind-Value="Filtro">
 						<option value="" selected disabled>Seleccione una opci&oacute;n</option>
-						<option value="SistemaId">Id</option>
-						<option value="Baja">Complejidad "Baja"</option>
-						<option value="Media">Complejidad "Media"</option>
-						<option value="Alta">Complejidad "Alta"</option>
-						<option value="Descripcion">Descripción</option>
-						<option value="Coste">Coste</option>
+						<option value="VentaId">Id</option>
+						<option value="ClienteNombre">Cliente</option>
+						<option value="Descripcion">Sistema</option>
+						<option value="Monto">Monto</option>
 					</InputSelect>
 
 					<label class="form-label mt-4"><strong>Desde:</strong></label>
@@ -51,46 +54,47 @@
 						<div class="input-group">
 							<span class="input-group-text bi bi-calendar-date-fill"></span>
 							<input type="date" class="form-control" @bind-value="FechaHasta" />
-							
+
 						</div>
 					</div>
 				</div>
 			</div>
 
-			<div class="tabletable-responsive">
+			<div class="table-responsive">
 				<table class="table table-hover">
 					<thead>
 						<tr>
-							<th>Id</th>
-							<th>Complejidad</th>
-							<th>Descripci&oacute;n</th>
-							<th>Existencia</th>
-							<th>Coste</th>
-							<th>Fecha</th>
+							<th>Venta Id</th>
+							<th>Cliente</th>
+							<th>Sistema</th>
+							<th>Cantidad</th>
+							<th>Monto</th>
+							<th>Fecha de Creaci&oacute;n</th>
 							<th>Editar</th>
 						</tr>
 					</thead>
 					<tbody>
 						@if (ResultadoPaginado != null)
 						{
-							foreach (var sistemas in ResultadoPaginado.Items)
+							foreach (var ventas in ResultadoPaginado.Items)
 							{
 								<tr>
-									<td>@sistemas.SistemaId</td>
-									<td>@sistemas.Complejidad</td>
-									<td>@sistemas.Descripcion</td>
-									<td>@sistemas.Existencia</td>
-									<td>@sistemas.Coste.ToString("N2")</td>
-									<td>@sistemas.Fecha.ToString("dd/MM/yyyy")</td>
+									<td>@ventas.VentaId</td>
+									<td>@ventas.Cliente?.ClienteNombre</td>
+									<td>@ventas.VentasDetalles?.FirstOrDefault()?.Sistema?.Descripcion</td>
+									<td class="text-center">@ventas.VentasDetalles?.FirstOrDefault()?.Cantidad</td>
+									<td class="text-end">@(ventas.VentasDetalles?.FirstOrDefault()?.Monto.ToString("N2") ?? "0.00")</td>
+									<td>@ventas.Fecha.ToString("dd/MM/yyyy")</td>
 									<td>
-										<a href="Sistema/Edit/@sistemas.SistemaId" class="btn btn-outline-primary bi bi-pencil-square"></a>
+										<a href="Ventas/Edit/@ventas.VentaId" class="btn btn-outline-primary bi bi-pencil-square"></a>
 									</td>
 								</tr>
 							}
 						}
 					</tbody>
 				</table>
-			</div >
+			</div>
+
 			@if (ResultadoPaginado != null && ResultadoPaginado.TotalPaginas > 1)
 			{
 				<nav aria-label="Paginación">
@@ -117,15 +121,14 @@
 </div>
 
 @code {
-	public List<Sistemas> ListaSistemas { get; set; } = new List<Sistemas>();
-	public string Filtro { get; set; }
+	private PaginacionResultado<Ventas> ResultadoPaginado { get; set; }
+	private int PaginaActual { get; set; } = 1;
+	private const int TamañoPagina = 5;
+	private CancellationTokenSource? _cts;
+	public string Filtro { get; set; } = string.Empty;
 	public string ValorFiltro { get; set; } = string.Empty;
 	public DateTime? FechaDesde { get; set; }
 	public DateTime? FechaHasta { get; set; }
-	private CancellationTokenSource? _cts;
-	private PaginacionResultado<Sistemas> ResultadoPaginado { get; set; }
-	private int PaginaActual { get; set; } = 1;
-	private const int TamañoPagina = 5;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -159,7 +162,7 @@
 
 	private async Task CargarPagina(int pagina)
 	{
-		ResultadoPaginado = await sistemaservice.BuscarSistemasAsync(
+		ResultadoPaginado = await ventaService.BuscarVentasAsync(
 		Filtro, ValorFiltro, FechaDesde, FechaHasta, pagina, TamañoPagina);
 		PaginaActual = pagina;
 	}

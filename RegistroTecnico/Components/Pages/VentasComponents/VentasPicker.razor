@@ -1,0 +1,122 @@
+﻿<div class="input-group input-group-sm mb-2 align-items-center mt-4">
+    <span class="input-group-text py-2 px-2">Seleccione:</span>
+
+    <InputSelect class="form-select form-select-sm py-2"
+                 @bind-Value="SelectedSistemaId">
+        <option disabled value="0">-- Seleccione un Sistema --</option>
+        @foreach (var sistema in sistemas)
+        {
+            <option value="@sistema.SistemaId">
+                @sistema.SistemaId - @sistema.Descripcion (Complejidad: @sistema.Complejidad)
+            </option>
+        }
+    </InputSelect>
+
+    <InputSelect class="form-select form-select-sm py-2"
+                 @bind-Value="CantidadSeleccionada"
+                 disabled="@(SistemaId == 0)">
+        <option disabled value="0">-- Seleccione una cantidad --</option>
+        @if (SistemaId > 0 && existenciaActual > 0)
+        {
+            @for (int i = 1; i <= existenciaActual; i++)
+            {
+                <option value="@i">@i</option>
+            }
+        }
+    </InputSelect>
+
+    <span class="input-group-text py-2 px-2">Coste:</span>
+    <InputNumber readonly class="form-control form-control-sm py-2"
+                 min="0"
+                 @bind-Value="Valor" />
+
+    <button class="btn btn-primary btn-sm bi bi-plus-square py-2" type="button" @onclick="TriggerSelection">
+        Agregar
+    </button>
+</div>
+
+@if (ErrorMessage != null)
+{
+    <div class="alert alert-danger alert-sm mt-2 p-2">
+        @ErrorMessage
+    </div>
+}
+
+@code {
+    [Parameter] public List<Sistemas> sistemas { get; set; } = new();
+    [Parameter] public int SistemaId { get; set; }
+    [Parameter] public double Valor { get; set; }
+    [Parameter] public EventCallback<(Sistemas sistema, int cantidad, double valorTotal)> OnSistemaSelected { get; set; }
+    [Parameter] public EventCallback<int> SistemaIdChanged { get; set; }
+    [Parameter] public EventCallback<double> ValorChanged { get; set; }
+
+    private int existenciaActual = 0;
+    private string? ErrorMessage { get; set; } = null;
+
+    private int _selectedSistemaId;
+    private int SelectedSistemaId
+    {
+        get => _selectedSistemaId;
+        set
+        {
+            if (_selectedSistemaId == value)
+                return;
+
+            _selectedSistemaId = value;
+            SistemaId = value;
+            SistemaIdChanged.InvokeAsync(value);
+
+            var sistema = sistemas.FirstOrDefault(s => s.SistemaId == value);
+            if (sistema != null)
+            {
+                existenciaActual = sistema.Existencia ?? 0;
+                CantidadSeleccionada = existenciaActual > 0 ? 1 : 0;
+
+                Valor = sistema.Coste * CantidadSeleccionada;
+                ValorChanged.InvokeAsync(Valor);
+            }
+            else
+            {
+                existenciaActual = 0;
+                CantidadSeleccionada = 0;
+                Valor = 0;
+                ValorChanged.InvokeAsync(0);
+            }
+        }
+    }
+
+    private int _cantidadSeleccionada;
+    private int CantidadSeleccionada
+    {
+        get => _cantidadSeleccionada;
+        set
+        {
+            _cantidadSeleccionada = value;
+
+            var sistema = sistemas.FirstOrDefault(s => s.SistemaId == SistemaId);
+            if (sistema != null)
+            {
+                Valor = sistema.Coste * _cantidadSeleccionada;
+            }
+        }
+    }
+
+    private async Task TriggerSelection()
+    {
+        ErrorMessage = null;
+
+        if (SistemaId == 0)
+        {
+            ErrorMessage = "Debe seleccionar un sistema válido";
+            return;
+        }
+
+        var sistemaSeleccionado = sistemas.FirstOrDefault(s => s.SistemaId == SistemaId);
+        if (sistemaSeleccionado == null)
+        {
+            ErrorMessage = "Sistema no encontrado";
+            return;
+        }
+        await OnSistemaSelected.InvokeAsync((sistemaSeleccionado, CantidadSeleccionada, Valor));
+    }
+}

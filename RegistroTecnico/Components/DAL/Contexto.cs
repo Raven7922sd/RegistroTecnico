@@ -10,6 +10,8 @@ public class Contexto:DbContext
     public virtual DbSet<Clientes> Clientes { get; set; }
     public virtual DbSet<Tickets> Tickets  { get; set; }
     public virtual DbSet<Sistemas>Sistemas { get; set; }
+    public virtual DbSet<Ventas>Ventas { get; set; }
+    public DbSet<VentasDetalles> VentasDetalles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -23,6 +25,18 @@ public class Contexto:DbContext
             .HasOne(t => t.Tecnico)
             .WithMany()
             .HasForeignKey(t => t.TecnicoId)
+            .OnDelete(DeleteBehavior.Restrict);       
+        
+        modelBuilder.Entity<Ventas>()
+            .HasOne(t => t.Cliente)
+            .WithMany()
+            .HasForeignKey(t => t.ClienteId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<VentasDetalles>()
+            .HasOne(t => t.Sistema)
+            .WithMany()
+            .HasForeignKey(t => t.SistemaId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

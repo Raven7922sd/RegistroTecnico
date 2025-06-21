@@ -23,7 +23,7 @@
 
 				<div class="mb-3">
 					<label class="form-label"><strong>Complejidad</strong></label>
-					<InputSelect class="form-control" @bind-Value="sistemas.Complejidad">
+					<InputSelect class="form-select" @bind-Value="sistemas.Complejidad">
 						<option value=0 selected disabled>Seleccione una complejidad</option>
 						<option value="Baja">Baja</option>
 						<option value="Media">Media</option>
@@ -36,6 +36,18 @@
 					<label class="form-label"><strong>Descripci&oacute;n</strong></label>
 					<textarea class="form-control" @bind="sistemas.Descripcion" rows="5" placeholder="Descripción"></textarea>
 					<ValidationMessage For="(() => sistemas.Descripcion)" />
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Existencia</strong></label>
+					<InputNumber class="form-control" @bind-Value="sistemas.Existencia"></InputNumber>
+					<ValidationMessage For="()=>sistemas.Existencia"></ValidationMessage>
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label"><strong>Coste</strong></label>
+					<InputNumber class="form-control" @bind-Value="sistemas.Coste"></InputNumber>
+					<ValidationMessage For="()=>sistemas.Coste"></ValidationMessage>
 				</div>
 			</div>
 
@@ -61,7 +73,6 @@
 	protected override async Task OnInitializedAsync()
 	{
 		sistemas = new Sistemas();
-
 	}
 
 	private async Task Guardar()
